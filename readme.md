@@ -1,14 +1,14 @@
-# Rust Compiler
+# Pascal Compiler
 
 Compiler developed for the class Compiladores - UFES.
 
-- Source language: Rust
-- Target language: JVM
+- Source language: Pascal
+- Target language: Mips
 - Implementation language: Java with ANTLR
 
 ## Steps
 
-In order to create the Rust compiler, the following tasks must be done:
+In order to create the Pascal compiler, the following tasks must be done:
 
 1. Lexer/Scanner
 2. Parser/Syntax Analyzer
