@@ -1,0 +1,15 @@
+version: '2.3'
+services:
+  java-antlr:
+    container_name: 'java-antlr'
+    image: 'java-antlr'
+    build:
+      context: .
+      dockerfile: 'Dockerfile'
+    tty: true
+    stdin_open: true
+    command: bash -c "mvn install; mvn exec:java -Dexec.mainClass=com.compiler.App;"
+    volumes:
+    - ./project:/project
+    - ./in:/in
+    - ./out:/out
