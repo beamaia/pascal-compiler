@@ -1,0 +1,37 @@
+<project name="PascalCompiler" default="compile" basedir=".">
+    <description>Build file from pascal compiler.</description>
+    
+    <!-- Propriedades do build. -->
+    <property name="src" location="src" />
+    <property name="bin" location="bin" />
+    <property name="mainClass" value="com.compiler.App" />
+    
+    <!-- Inicialização. -->
+    <target name="init" description="Inicializa as estruturas necessárias.">
+        <tstamp/>
+        <mkdir dir="${bin}" />
+    </target>
+
+    <!-- Compilação. -->
+    <target name="compile" depends="init" description="Compila o código-fonte.">
+        <javac includeantruntime="false" srcdir="${src}" destdir="${bin}" />
+    </target>
+
+    <!-- Execução normal. -->
+    <target name="run" depends="compile" description="Executa o programa principal, normal.">
+        <java classname="${mainClass}">
+            <classpath>
+                <pathelement path="${bin}" />
+            </classpath>
+        </java>
+    </target>
+
+    <!-- Limpeza. -->
+    <target name="clean" description="Limpa o projeto, deixando apenas o código-fonte." >
+        <delete dir="${bin}"/>
+        <delete><fileset dir="." includes="*.txt"/></delete>
+        <delete><fileset dir="." includes="*.csv"/></delete>
+        <delete><fileset dir="." includes="*.dat"/></delete>
+    </target>
+</project>
+
