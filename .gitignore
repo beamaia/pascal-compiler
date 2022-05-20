@@ -1,3 +1,6 @@
+# lexer files
+project/lexer/
+
 # Compiled class file
 *.class
 

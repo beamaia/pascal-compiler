@@ -1,0 +1,16 @@
+version: '2.3'
+services:
+  java-antlr:
+    container_name: 'java-antlr'
+    image: 'java-antlr'
+    build:
+      context: .
+      dockerfile: 'Dockerfile'
+    tty: true
+    stdin_open: true
+    command: bash -c "make && make runall"
+    volumes:
+    - ./project:/project
+    - ./in:/in
+    - ./out:/out
+    
