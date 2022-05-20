@@ -22,21 +22,21 @@ IN=/in
 all: antlr javac
 	@echo "Done."
 
-antlr: EZLexer.g
-	$(ANTLR4) -o $(GEN_PATH) EZLexer.g
+antlr: PASLexer.g
+	$(ANTLR4) -o $(GEN_PATH) PASLexer.g
 
 javac:
 	$(JAVAC) $(CLASS_PATH_OPTION) $(GEN_PATH)/*.java
 
 # Veja a explicação no README
 run:
-	cd $(GEN_PATH) && $(GRUN) EZLexer program $(FILE) -gui
+	cd $(GEN_PATH) && $(GRUN) PASLexer program $(FILE)
 
 runall:
-	-for FILE in $(IN)/*.ezl; do \
+	-for FILE in $(IN)/*.pas; do \
 	 	cd $(GEN_PATH) && \
 	 	echo -e "\nRunning $${FILE}" && \
-	 	$(GRUN) EZLexer program $${FILE} -gui && \
+	 	$(GRUN) PASLexer tokens -tokens  $${FILE} && \
 	 	cd .. ; \
 	done;
 
