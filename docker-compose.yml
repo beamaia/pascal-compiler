@@ -8,8 +8,9 @@ services:
       dockerfile: 'Dockerfile'
     tty: true
     stdin_open: true
-    command: bash -c "mvn install; mvn exec:java -Dexec.mainClass=com.compiler.App;"
+    command: bash -c "make && make runall"
     volumes:
     - ./project:/project
     - ./in:/in
     - ./out:/out
+    

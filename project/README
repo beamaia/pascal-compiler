@@ -1,0 +1,51 @@
+* Passos para executar a solução do Lab01 no ANTLR:
+
+1) Instale um JDK do Java.
+
+2) Baixe o ANTLR do site https://www.antlr.org/.
+   Certifique-se de baixar o .jar completo, isto é, o arquivo com o nome
+   'antlr-X.Y.Z-complete.jar'; aonde X, Y e Z são as versões mais atuais.
+
+3) Siga os passos descritos no Quick Start do site para configurar os comandos
+   'antlr4' e 'grun', ou simplesmente use os que estão no Makefile.
+
+4) Veja os comentários no Makefile e no arquivo EZLexer.g para entender melhor
+   o funcionamento.
+
+5) Para rodar o ANTLR e compilar os arquivos gerados:
+
+   $ make
+
+   Isto cria um diretório 'lexer' para os arquivos gerados pelo ANTLR. Isto não
+   é obrigatório de fazer mas eu acho uma boa para não misturar com o resto do
+   código.
+
+   O ANTLR gera os seguintes arquivos a partir do EZLexer.g:
+   - EZLexer.tokens e EZLexer.interp: arquivos com algumas informações da
+     representação interna dos tokens que o ANTLR usa. Geralmente podem ser
+     ignorados.
+   - EZLexer.java: contém o código do autômato que implementa o scanner.
+
+6) Para executar o scanner com um único arquivo de entrada:
+
+   $ make run FILE=arquivo_de_teste
+
+   Esta instrução do make executa o setup de teste do ANTLR com o seguinte
+   comando:
+
+   $ grun EZLexer tokens -tokens $(FILE)
+
+   - 'EZLexer' é o nome da gramática criada.
+   - 'tokens' é o nome artificial da regra inicial da gramática. No caso temos
+     somente a implementação do lexer (scanner) então precisamos usar essa
+     "regra".
+   - '-tokens' indica que a gente só quer rodar o scanner (não há um parser).
+
+   Como comportamento padrão do setup de teste, o ANTLR imprime no terminal
+   a lista de todos os tokens gerados. Os campos de cada token devem ser fáceis
+   de entender, mas se quiser uma explicação mais detalhada, veja as páginas
+   26-27 do livro 'The Definitive ANTLR 4 Reference'.
+
+7) Se quiser rodar todos os casos de teste de uma vez, basta fazer:
+
+   $ make runall
