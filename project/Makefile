@@ -36,7 +36,7 @@ runall:
 	-for FILE in $(IN)/*.pas; do \
 	 	cd $(GEN_PATH) && \
 	 	echo -e "\nRunning $${FILE}" && \
-	 	$(GRUN) PASLexer tokens -tokens  $${FILE} && \
+	 	$(GRUN) PASLexer program  $${FILE} && \
 	 	cd .. ; \
 	done;
 

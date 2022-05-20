@@ -3,7 +3,7 @@
 grammar PASLexer;
 
 program: PROGRAM ID SEMI uses_sect vars_sect stmt_sect;
-uses_sect: USES opt_uses_decl;
+uses_sect: opt_uses_decl;
 opt_uses_decl: | uses_decl_list;
 uses_decl_list: uses_decl_list uses_decl | uses_decl;
 uses_decl: USES ID SEMI;
