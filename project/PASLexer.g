@@ -1,6 +1,9 @@
-// Quando só temos um scanner (lexer), precisamos indicar na declaração da
-// gramática, como abaixo.
+
 grammar PASLexer;
+
+// ===================================================
+// PARSER
+// ===================================================
 
 program: PROGRAM ID SEMI uses_sect vars_sect stmt_sect;
 uses_sect: opt_uses_decl;
@@ -35,13 +38,16 @@ expr: expr LT expr
     | STR_VAL
     | ID;
 
+// ===================================================
+// SCANNER
+// ===================================================
 
-// Reconhece e descarta espaços em branco e comentários.
+// Reconhece e descarta espaços em branco e comentários
+
 WS       : [ \t\n\r]+      -> skip ;
 COMMENTS : '(*' ~[*)]* '*)' -> skip ; // no flex a expressão do meio seria [^}]*
 
-// Note que não são necessários comandos de impressão abaixo porque o ANTLR
-// já exibe os tokens no terminal por padrão.
+// Fragments para case insensitive
 
 fragment A:[aA];
 fragment B:[bB];
@@ -69,6 +75,8 @@ fragment W:[wW];
 fragment X:[xX];
 fragment Y:[yY];
 fragment Z:[zZ];
+
+// Palavras reservadas
 
 ABSOLUTE       : A B S O L U T E;
 AND            : A N D;
@@ -124,6 +132,8 @@ WHILE          : W H I L E;
 WITH           : W I T H;
 XOR            : X O R;
 
+// Tipos primitivos da linguagem
+
 INTEGER        : I N T E G E R;
 WORD           : W O R D;
 LONGINT        : L O N G I N T;
@@ -131,6 +141,7 @@ REAL           : R E A L;
 CHAR           : C H A R;
 BOOLEAN        : B O O L E A N;
 
+// 
 
 ASSIGN : ':=' ;
 EQ     : '='  ;
@@ -144,12 +155,13 @@ RPAR   : ')'  ;
 SEMI   : ';'  ;
 TIMES  : '*'  ;
 
+// Valores inteiros, decimais e strings
+
 INT_VAL  : [0-9]+            ;
 REAL_VAL : [0-9]+ '.' [0-9]+ ;
 STR_VAL  : '"' ~["]* '"'     ;
 
+// Nomes de variaveis, funções, etc
+
 ID : [a-zA-Z]+ ;
 
-// O ANTLR já possui um sistema de tratamento de erros embutido. Assim, não
-// é necessária uma regra para detectar e indicar os erros léxicos.
-// Veja a execução para um dos casos de teste 'lexerr0[1-3].ezl'.
