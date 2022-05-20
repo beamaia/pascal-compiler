@@ -2,6 +2,6 @@ program posneg;
 uses crt;
 var 
  no : integer;
-begin
+bEgIn
 
- end.
+ End.
