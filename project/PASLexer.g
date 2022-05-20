@@ -6,27 +6,52 @@ grammar PASLexer;
 // ===================================================
 
 program: PROGRAM ID SEMI uses_sect vars_sect stmt_sect;
+
 uses_sect: opt_uses_decl;
-opt_uses_decl: | uses_decl_list;
-uses_decl_list: uses_decl_list uses_decl | uses_decl;
+opt_uses_decl: 
+    | uses_decl_list;
+uses_decl_list: uses_decl_list uses_decl 
+    | uses_decl;
 uses_decl: USES ID SEMI;
+
 vars_sect: VAR opt_var_decl;
-opt_var_decl:  | var_decl_list;
-var_decl_list: var_decl_list var_decl | var_decl;
+opt_var_decl:  
+    | var_decl_list;
+var_decl_list: var_decl_list var_decl 
+    | var_decl;
 var_decl: ID ':' type_spec SEMI;
-type_spec: INTEGER | WORD | LONGINT | REAL | CHAR | BOOLEAN;
+
+type_spec: INTEGER | WORD | LONGINT | REAL | CHAR | BOOLEAN | STRING;
+
 stmt_sect: BEGINE stmt_list END;
-stmt_list: | stmt_list stmt | stmt;
-stmt: if_stmt | repeat_stmt | assign_stmt | read_stmt | write_stmt;
+stmt_list: 
+    | stmt_list stmt 
+    | stmt;
+stmt: if_stmt 
+    | repeat_stmt 
+    | assign_stmt 
+    | read_stmt 
+    | write_stmt
+    | fnc_stmt;
+
 if_stmt: IF expr THEN stmt_list
     | IF expr THEN stmt_list ELSE stmt_list;
+
 repeat_stmt: REPEAT stmt_list UNTIL expr;
+
 assign_stmt: ID ASSIGN expr SEMI;
+
 read_stmt: READ ID SEMI;
+
 write_stmt: WRITE expr SEMI;
+
+fnc: ID LPAR expr RPAR | ID SEMI | ID LPAR RPAR;
+fnc_stmt: fnc SEMI | ID LPAR fnc RPAR SEMI;
+
 expr: expr LT expr
     | expr EQ expr
     | expr PLUS expr
+    | MINUS expr
     | expr MINUS expr
     | expr TIMES expr
     | expr OVER expr
@@ -35,7 +60,8 @@ expr: expr LT expr
     | FALSE
     | INT_VAL
     | REAL_VAL
-    | STR_VAL
+    | SQSTR 
+    | DQSTR
     | ID;
 
 // ===================================================
@@ -45,7 +71,8 @@ expr: expr LT expr
 // Reconhece e descarta espaços em branco e comentários
 
 WS       : [ \t\n\r]+      -> skip ;
-COMMENTS : '(*' ~[*)]* '*)' -> skip ; // no flex a expressão do meio seria [^}]*
+COMMENTSPR : '(*' ~[*)]* '*)' -> skip ; // no flex a expressão do meio seria [^}]*
+COMMENTS : '{' ~[}]* '}' -> skip ; 
 
 // Fragments para case insensitive
 
@@ -157,11 +184,13 @@ TIMES  : '*'  ;
 
 // Valores inteiros, decimais e strings
 
-INT_VAL  : [0-9]+            ;
-REAL_VAL : [0-9]+ '.' [0-9]+ ;
-STR_VAL  : '"' ~["]* '"'     ;
+INT_VAL  : [0-9]+;
+REAL_VAL : [0-9]+ '.' [0-9]+ 
+    | [0-9]+ '.' [0-9] E MINUS [0-9]+;
+
+SQSTR : '\'' (~['"] | DQSTR)* '\'';
+DQSTR : '"'  (~['"] | SQSTR)* '"';
 
 // Nomes de variaveis, funções, etc
 
 ID : [a-zA-Z]+ ;
-
