@@ -5,7 +5,7 @@ grammar PASLexer;
 // PARSER
 // ===================================================
 
-program: PROGRAM ID SEMI uses_sect vars_sect procedures_sect stmt_sect;
+program: PROGRAM ID SEMI vars_sect procedures_sect stmt_sect;
 
 // fnc_sign_sect: opt_fnc_sign_decl;
 // opt_fnc_sign_decl:
@@ -104,38 +104,38 @@ expr: expr LT expr
 
 // Reconhece e descarta espaços em branco e comentários
 
-WS       : [ \t\n\r]+      -> skip ;
+WS         : [ \t\n\r]+      -> skip ;
 COMMENTSPR : '(*' ~[*)]* '*)' -> skip ; // no flex a expressão do meio seria [^}]*
-COMMENTS : '{' ~[}]* '}' -> skip ; 
+COMMENTS   : '{' ~[}]* '}'   -> skip ; 
 
 // Fragments para case insensitive
 
-fragment A:[aA];
-fragment B:[bB];
-fragment C:[cC];
-fragment D:[dD];
-fragment E:[eE];
-fragment F:[fF];
-fragment G:[gG];
-fragment H:[hH];
-fragment I:[iI];
-fragment J:[jJ];
-fragment K:[kK];
-fragment L:[lL];
-fragment M:[mM];
-fragment N:[nN];
-fragment O:[oO];
-fragment P:[pP];
-fragment Q:[qQ];
-fragment R:[rR];
-fragment S:[sS];
-fragment T:[tT];
-fragment U:[uU];
-fragment V:[vV];
-fragment W:[wW];
-fragment X:[xX];
-fragment Y:[yY];
-fragment Z:[zZ];
+fragment A : [aA];
+fragment B : [bB];
+fragment C : [cC];
+fragment D : [dD];
+fragment E : [eE];
+fragment F : [fF];
+fragment G : [gG];
+fragment H : [hH];
+fragment I : [iI];
+fragment J : [jJ];
+fragment K : [kK];
+fragment L : [lL];
+fragment M : [mM];
+fragment N : [nN];
+fragment O : [oO];
+fragment P : [pP];
+fragment Q : [qQ];
+fragment R : [rR];
+fragment S : [sS];
+fragment T : [tT];
+fragment U : [uU];
+fragment V : [vV];
+fragment W : [wW];
+fragment X : [xX];
+fragment Y : [yY];
+fragment Z : [zZ];
 
 // Palavras reservadas
 
@@ -145,14 +145,14 @@ ARRAY          : A R R A Y;
 ASM            : A S M;
 BEGINE         : B E G I N;
 CASE           : C A S E;
-CONST          : C O N S T;
+CONST          : C O N S T;                  // Nao 
 CONSTRUCTOR    : C O N S T R U C T O R;
 DESTRUCTOR     : D E S T R U C T O R;
 DIV            : D I V;
 DO             : D O;
 DOWNTO         : D O W N T O;
 ELSE           : E L S E;
-END           : E N D '.' | E N D;
+END            : E N D '.' | E N D;
 FILE           : F I L E;
 FOR            : F O R;
 FUNCTION       : F U N C T I O N;
@@ -207,15 +207,21 @@ BOOLEAN        : B O O L E A N;
 ASSIGN : ':=' ;
 EQ     : '='  ;
 NEQ    : '<>' ;
-LPAR   : '('  ;
 LT     : '<'  ;
 RT     : '>'  ;
-MINUS  : '-'  ;
-OVER   : '/'  ;
 PLUS   : '+'  ;
-RPAR   : ')'  ;
-SEMI   : ';'  ;
+MINUS  : '-'  ;
 TIMES  : '*'  ;
+OVER   : '/'  ;
+SEMI   : ';'  ;
+LPAR   : '('  ;
+RPAR   : ')'  ;
+LSB    : '['  ;
+RSB    : ']'  ;
+RCB    : '{'  ;
+LCB    : '}'  ;
+DOL    : '$'  ;
+HASH   : '#'  ;
 
 // Valores inteiros, decimais e strings
 
@@ -223,8 +229,7 @@ INT_VAL  : [0-9]+;
 REAL_VAL : [0-9]+ '.' [0-9]+ 
     | [0-9]+ '.' [0-9] E MINUS [0-9]+;
 
-SQSTR : '\'' (~['"] | DQSTR)* '\'';
-DQSTR : '"'  (~['"] | SQSTR)* '"';
+SQSTR : '\'' (~['"] )* '\'';
 
 // Nomes de variaveis, funções, etc
 
