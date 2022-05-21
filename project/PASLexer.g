@@ -90,7 +90,8 @@ stmt: if_stmt
     | write_stmt
     | fnc_stmt
     | while_stmt
-    | for_stmt;
+    | for_stmt
+    | case_stmt;
 
 // If then else
 if_stmt: IF expr THEN stmt_sect SEMI
@@ -116,6 +117,24 @@ for_stmt: FOR ID ':=' expr TO expr DO stmt_sect SEMI
 
 // Atribuição
 assign_stmt: ID ASSIGN expr SEMI;
+
+// Case
+case_stmt: CASE case_arg OF case_target_list END SEMI
+    | CASE case_arg OF case_target_list case_else END SEMI;
+case_arg: LPAR ID RPAR
+    | ID;
+
+case_target_list: case_target_list case_target
+    | case_target;
+case_target: case_l_target_list ':' stmt_sect SEMI
+    | case_l_target_list ':' stmt;
+case_else: ELSE stmt_sect
+    | ELSE stmt;
+
+case_l_target_list: case_l_target_list ',' case_l_target
+    | case_l_target;
+case_l_target: SQSTR | INT_VAL | INT_VAL '..' INT_VAL;
+
 
 // ?
 read_stmt: READ ID SEMI;
