@@ -5,21 +5,38 @@ grammar PASLexer;
 // PARSER
 // ===================================================
 
-program: PROGRAM ID SEMI vars_sect procedures_sect stmt_sect;
+program: PROGRAM ID SEMI vars_sect fnc_and_procedures_sect stmt_sect;
 
-// fnc_sign_sect: opt_fnc_sign_decl;
-// opt_fnc_sign_decl:
-//     | fnc_sign_decl_list;
-// fnc_sign_decl_list: fnc_sign_decl_list fnc_sign_decl 
-//     | fnc_sign_decl;
-// fnc_sign_decl: FUNCTION ID LPAR vars_comma_sect RPAR ':' type_spec SEMI stmt_sect SEMI;
+// Aceita functions e procedures em qualquer ordem
+fnc_and_procedures_sect: opt_fnc_and_procedures_sect;
+opt_fnc_and_procedures_sect:
+    | fnc_and_procedures_list;
+fnc_and_procedures_list: fnc_and_procedures_list fnc_and_procedures 
+    | fnc_and_procedures;
+fnc_and_procedures: fnc_sign_decl_list | procedures_decl_list;
 
-// vars_comma_sect: opt_var_comma_decl;
-// opt_var_comma_decl:  
-//     | var_comma_decl_list;
-// var_comma_decl_list: var_comma_decl_list ',' var_comma_decl 
-//     | var_comma_decl;
-// var_comma_decl: ID ':' type_spec;
+// Aceita functions no formato
+// function_name ID (param_list) : return_type
+// variaveis
+// Begin
+//   <stmt>
+// End;
+fnc_sign_sect: opt_fnc_sign_decl;
+opt_fnc_sign_decl:
+     | fnc_sign_decl_list;
+fnc_sign_decl_list: fnc_sign_decl_list fnc_sign_decl 
+     | fnc_sign_decl;
+fnc_sign_decl: FUNCTION ID LPAR fnc_sign_params_sect RPAR ':' type_spec SEMI vars_sect stmt_sect SEMI;
+
+// Aceita parametros de function no formato 
+// argument(s): type1; argument(s): type2; ...
+fnc_sign_params_sect: 
+    | opt_fnc_sign_param_decl;
+opt_fnc_sign_param_decl:  
+    | fnc_sign_param_decl_list;
+fnc_sign_param_decl_list: fnc_sign_param_decl_list SEMI fnc_sign_param_decl
+    | fnc_sign_param_decl;
+fnc_sign_param_decl: id_list ':' type_spec;
 
 // Aceita procedures no formato
 // Procedure <id>;
@@ -29,15 +46,27 @@ program: PROGRAM ID SEMI vars_sect procedures_sect stmt_sect;
 procedures_sect: opt_procedures_decl;
 opt_procedures_decl:
      | procedures_decl_list;
-procedures_decl_list: procedures_decl_list procedures_decl
+procedures_decl_list : procedures_decl_list procedures_decl 
      | procedures_decl;
-procedures_decl: PROCEDURE ID SEMI stmt_sect SEMI;
+procedures_decl: PROCEDURE ID LPAR procedure_params_sect RPAR SEMI stmt_sect SEMI;
+
+// Aceita parametros de procedure no formato
+// argument(s): type1; argument(s): type2; ...
+procedure_params_sect: 
+    | opt_procedure_param_decl;
+opt_procedure_param_decl:  
+    | procedure_param_decl_list;
+procedure_param_decl_list: procedure_param_decl_list SEMI procedure_param_decl
+    | procedure_param_decl;
+procedure_param_decl: id_list ':' type_spec
+    | VAR id_list ':' type_spec;
 
 // Aceita multiplas declarações de variaveis no formato
 // VAR
 //    <id> : <type>;
-//    ... restante das variaveis
-vars_sect: VAR opt_var_decl;
+//    ... restante das variaveis 
+vars_sect: 
+    | VAR opt_var_decl;
 opt_var_decl:  
     | var_decl_list;
 var_decl_list: var_decl_list var_decl 
@@ -59,14 +88,31 @@ stmt: if_stmt
     | assign_stmt 
     | read_stmt 
     | write_stmt
-    | fnc_stmt;
+    | fnc_stmt
+    | while_stmt
+    | for_stmt;
 
 // If then else
-if_stmt: IF expr THEN stmt_list
-    | IF expr THEN stmt_list ELSE stmt_list;
+if_stmt: IF expr THEN stmt_sect SEMI
+    | IF expr THEN stmt_sect SEMI else_stmt
+    | IF expr THEN stmt
+    | IF expr THEN stmt else_stmt;
+else_stmt: ELSE stmt_sect SEMI
+    | ELSE stmt
+    | ELSE if_stmt;
+
+
 
 // Repeat -> TROCAR PARA WHILE
-repeat_stmt: REPEAT stmt_list UNTIL expr;
+repeat_stmt: REPEAT stmt_list UNTIL expr SEMI;
+
+// WHILE
+while_stmt: WHILE expr DO stmt_sect SEMI
+    | WHILE expr DO stmt;
+
+// FOR
+for_stmt: FOR ID ':=' expr TO expr DO stmt_sect SEMI
+    | FOR ID ':=' expr TO expr DO stmt ;
 
 // Atribuição
 assign_stmt: ID ASSIGN expr SEMI;
@@ -77,25 +123,37 @@ read_stmt: READ ID SEMI;
 write_stmt: WRITE expr SEMI;
 
 // Chamada de funções
-fnc: ID LPAR expr RPAR | ID | ID LPAR RPAR;
+fnc: ID LPAR expr RPAR 
+    | ID 
+    | ID LPAR RPAR
+    | ID LPAR expr_list RPAR; 
 fnc_stmt: fnc SEMI | ID LPAR fnc RPAR SEMI;
 
 // Expressões
+expr_list: expr_list ',' expr
+    | expr;
 expr: expr LT expr
+    | expr LTE expr
+    | expr BT expr
+    | expr BTE expr
     | expr EQ expr
     | expr NEQ expr
     | expr PLUS expr
+    | expr AND expr
+    | expr OR expr
+    | expr DIV expr
+    | expr MOD expr
     | MINUS expr
     | expr MINUS expr
     | expr TIMES expr
     | expr OVER expr
     | LPAR expr RPAR
+    | fnc
     | TRUE
     | FALSE
     | INT_VAL
     | REAL_VAL
     | SQSTR 
-    | DQSTR
     | ID;
 
 // ===================================================
@@ -104,8 +162,13 @@ expr: expr LT expr
 
 // Reconhece e descarta espaços em branco e comentários
 
+ENDC : '*)';
+
+// (* *) *)
 WS         : [ \t\n\r]+      -> skip ;
-COMMENTSPR : '(*' ~[*)]* '*)' -> skip ; // no flex a expressão do meio seria [^}]*
+// COMMENTSPR : '(*' (.|'\n')* '*)' -> skip ; // no flex a expressão do meio seria [^}]*
+COMMENTSPR : '(*' .*?  '*)' -> skip ; // no flex a expressão do meio seria [^}]*
+
 COMMENTS   : '{' ~[}]* '}'   -> skip ; 
 
 // Fragments para case insensitive
@@ -145,7 +208,7 @@ ARRAY          : A R R A Y;
 ASM            : A S M;
 BEGINE         : B E G I N;
 CASE           : C A S E;
-CONST          : C O N S T;                  // Nao 
+CONST          : C O N S T;                 
 CONSTRUCTOR    : C O N S T R U C T O R;
 DESTRUCTOR     : D E S T R U C T O R;
 DIV            : D I V;
@@ -208,7 +271,9 @@ ASSIGN : ':=' ;
 EQ     : '='  ;
 NEQ    : '<>' ;
 LT     : '<'  ;
-RT     : '>'  ;
+LTE    : '<=' ;
+BT     : '>'  ;
+BTE    : '>=' ;
 PLUS   : '+'  ;
 MINUS  : '-'  ;
 TIMES  : '*'  ;
@@ -233,4 +298,4 @@ SQSTR : '\'' (~['"] )* '\'';
 
 // Nomes de variaveis, funções, etc
 
-ID : [a-zA-Z_]+ ;
+ID : [a-zA-Z][a-zA-Z0-9_]* ;
