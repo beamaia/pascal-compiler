@@ -33,4 +33,5 @@ Foram criados no total 28 exemplos, sendo 13 de erros sintáticos ou léxicos.
 ## 🤔 Dificuldades
 
 Tivemos dificuldades em compreender as diferentes versões de Pascal, sendo utilizado diferentes nomes como Turbo Pascal, Delphi, Object Pascal, entre outros. Optamos por implementar o que reconhecemos como Turbo Pascal, porém mesmo assim, havia funcionalidades que não havia distinção entre os tipos. Pode ser possível que algo de outros tipos de Pascal foi implementado devido a isso. 
+
 No analisador léxico, tivemos um pouco de dificuldade com o reconhecimento de comentários. Conseguimos encontrar uma solução que funcionou bem para os casos testados.
