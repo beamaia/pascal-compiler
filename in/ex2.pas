@@ -5,6 +5,8 @@ VAR
    i : INTEGER;     { variable name is i, type is integer }
    c : CHAR;        { variable name is c, type is character }
    s : STRING;      { variable name is s, type is string }
+   a,b,c: STRING;
+   id,x,y: INTEGER;
 BEGIN
     x := -34.55;    { valid real number assigned to variable x }
     x := -3.9E-3;   { valid real number assigned to variable x }

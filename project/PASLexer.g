@@ -33,15 +33,6 @@ procedures_decl_list: procedures_decl_list procedures_decl
      | procedures_decl;
 procedures_decl: PROCEDURE ID SEMI stmt_sect SEMI;
 
-// Aceita multiplas uses no formato
-// Uses <id>;
-uses_sect: opt_uses_decl;
-opt_uses_decl: 
-    | uses_decl_list;
-uses_decl_list: uses_decl_list uses_decl 
-    | uses_decl;
-uses_decl: USES ID SEMI;
-
 // Aceita multiplas declarações de variaveis no formato
 // VAR
 //    <id> : <type>;
@@ -51,7 +42,9 @@ opt_var_decl:
     | var_decl_list;
 var_decl_list: var_decl_list var_decl 
     | var_decl;
-var_decl: ID ':' type_spec SEMI;
+var_decl: id_list ':' type_spec SEMI;
+id_list: id_list ',' ID
+    | ID;
 
 // Definição de tipos de variaveis
 type_spec: INTEGER | WORD | LONGINT | REAL | CHAR | BOOLEAN | STRING;
