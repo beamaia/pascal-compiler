@@ -5,7 +5,7 @@ grammar PASLexer;
 // PARSER
 // ===================================================
 
-program: PROGRAM ID SEMI vars_sect fnc_and_procedures_sect stmt_sect;
+program: PROGRAM ID SEMI vars_sect fnc_and_procedures_sect stmt_sect '.';
 
 // Aceita functions e procedures em qualquer ordem
 fnc_and_procedures_sect: opt_fnc_and_procedures_sect;
@@ -86,8 +86,6 @@ stmt_list:
 stmt: if_stmt 
     | repeat_stmt 
     | assign_stmt 
-    | read_stmt 
-    | write_stmt
     | fnc_stmt
     | while_stmt
     | for_stmt
@@ -136,11 +134,6 @@ case_l_target_list: case_l_target_list ',' case_l_target
 case_l_target: SQSTR | INT_VAL | INT_VAL '..' INT_VAL;
 
 
-// ?
-read_stmt: READ ID SEMI;
-// ?
-write_stmt: WRITE expr SEMI;
-
 // Chamada de funções
 fnc: ID LPAR expr RPAR 
     | ID 
@@ -168,8 +161,6 @@ expr: expr LT expr
     | expr OVER expr
     | LPAR expr RPAR
     | fnc
-    | TRUE
-    | FALSE
     | INT_VAL
     | REAL_VAL
     | SQSTR 
@@ -234,7 +225,7 @@ DIV            : D I V;
 DO             : D O;
 DOWNTO         : D O W N T O;
 ELSE           : E L S E;
-END            : E N D '.' | E N D;
+END            : E N D;
 FILE           : F I L E;
 FOR            : F O R;
 FUNCTION       : F U N C T I O N;
