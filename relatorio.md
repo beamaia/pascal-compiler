@@ -18,7 +18,7 @@ O analisador léxico é capaz de reconhecer os seguintes tipos:
 - real
 - char
 - boolean
-- array
+- array estático
 
 Além disso, consegue reconhecer os seguintes tipos de declarações:
 - if...then, else if...then e else (identificável por os EBNF *if_stmt* e *else_stmt*).
@@ -50,7 +50,7 @@ Ao executar este comando, ele executa make e make runall. Isso gera as regras da
 
 ### 🧪 Casos de Testes
 
-Foram criados no total 28 exemplos, sendo 13 de erros sintáticos ou léxicos. 
+Foram criados no total 31 exemplos, sendo 15 de erros sintáticos ou léxicos. 
 
 ## 🤔 Dificuldades
 
