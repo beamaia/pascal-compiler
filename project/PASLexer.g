@@ -21,9 +21,6 @@ fnc_and_procedures: fnc_sign_decl_list | procedures_decl_list;
 // Begin
 //   <stmt>
 // End;
-fnc_sign_sect: opt_fnc_sign_decl;
-opt_fnc_sign_decl:
-     | fnc_sign_decl_list;
 fnc_sign_decl_list: fnc_sign_decl_list fnc_sign_decl 
      | fnc_sign_decl;
 fnc_sign_decl: FUNCTION ID LPAR fnc_sign_params_sect RPAR ':' type_spec SEMI vars_sect stmt_sect SEMI;
@@ -43,9 +40,6 @@ fnc_sign_param_decl: id_list ':' type_spec;
 // Begin 
 //   <stmt>
 // End;
-procedures_sect: opt_procedures_decl;
-opt_procedures_decl:
-     | procedures_decl_list;
 procedures_decl_list : procedures_decl_list procedures_decl 
      | procedures_decl;
 procedures_decl: PROCEDURE ID LPAR procedure_params_sect RPAR SEMI stmt_sect SEMI;
@@ -76,7 +70,7 @@ id_list: id_list ',' ID
     | ID;
 
 // Definição de tipos de variaveis
-type_spec: INTEGER | WORD | LONGINT | REAL | CHAR | BOOLEAN | STRING;
+type_spec: INTEGER | REAL | CHAR | BOOLEAN;
 
 // Tipos de statements
 stmt_sect: BEGINE stmt_list END;
@@ -99,8 +93,6 @@ if_stmt: IF expr THEN stmt_sect SEMI
 else_stmt: ELSE stmt_sect SEMI
     | ELSE stmt
     | ELSE if_stmt;
-
-
 
 // Repeat -> TROCAR PARA WHILE
 repeat_stmt: REPEAT stmt_list UNTIL expr SEMI;
@@ -164,7 +156,9 @@ expr: expr LT expr
     | INT_VAL
     | REAL_VAL
     | SQSTR 
-    | ID;
+    | ID
+    | TRUE
+    | FALSE;
 
 // ===================================================
 // SCANNER
@@ -269,13 +263,11 @@ XOR            : X O R;
 // Tipos primitivos da linguagem
 
 INTEGER        : I N T E G E R;
-WORD           : W O R D;
-LONGINT        : L O N G I N T;
 REAL           : R E A L;
 CHAR           : C H A R;
 BOOLEAN        : B O O L E A N;
 
-// 
+// Operadores
 
 ASSIGN : ':=' ;
 EQ     : '='  ;
@@ -306,6 +298,8 @@ REAL_VAL : [0-9]+ '.' [0-9]+
 
 SQSTR : '\'' (~['"] )* '\'';
 
+TRUE: T R U E;
+FALSE: F A L S E;
 // Nomes de variaveis, funções, etc
 
 ID : [a-zA-Z][a-zA-Z0-9_]* ;
