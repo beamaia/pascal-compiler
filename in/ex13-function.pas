@@ -5,7 +5,7 @@ var
 (*function definition *)
 (* function name(argument(s): type1; argument(s): type2; ...): function_type; 
 *)
-function max(num1, num2: integer; f1,f2 : string ): integer;
+function max(num1, num2: integer; f1,f2 : char ): integer;
 
 var
    (* local variable declaration *)
