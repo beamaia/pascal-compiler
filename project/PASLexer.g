@@ -174,11 +174,11 @@ expr: expr LT expr
 
 ENDC : '*)';
 
-// (* *) *)
+// Espaco em branco.  
 WS         : [ \t\n\r]+      -> skip ;
-// COMMENTSPR : '(*' (.|'\n')* '*)' -> skip ; // no flex a expressão do meio seria [^}]*
-COMMENTSPR : '(*' .*?  '*)' -> skip ; // no flex a expressão do meio seria [^}]*
 
+// Comentarios do tipo (* *) e { }
+COMMENTSPR : '(*' .*?  '*)' -> skip ; // no flex a expressão do meio seria [^}]*
 COMMENTS   : '{' ~[}]* '}'   -> skip ; 
 
 // Fragments para case insensitive
