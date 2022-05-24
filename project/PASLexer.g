@@ -5,7 +5,7 @@ grammar PASLexer;
 // PARSER
 // ===================================================
 
-program: PROGRAM ID SEMI vars_sect fnc_and_procedures_sect stmt_sect '.';
+program: PROGRAM ID SEMI types_sect vars_sect fnc_and_procedures_sect stmt_sect '.';
 
 // Aceita functions e procedures em qualquer ordem
 fnc_and_procedures_sect: opt_fnc_and_procedures_sect;
@@ -55,6 +55,24 @@ procedure_param_decl_list: procedure_param_decl_list SEMI procedure_param_decl
 procedure_param_decl: id_list ':' type_spec
     | VAR id_list ':' type_spec;
 
+// Aceita multiplas declarações de arrays no formato
+// TYPE
+//    <id> = <type>;
+//    ... restante dos arrays 
+types_sect: 
+    | TYPE opt_type_decl;
+opt_type_decl:  
+    | type_decl_list;
+type_decl_list: type_decl_list type_decl 
+    | type_decl;
+type_decl: ID EQ array_type SEMI;
+
+array_type_list: array_type | type_spec;
+array_type: ARRAY LSB index_list RSB OF array_type_list;
+index_list: index
+    | index_list ',' index;
+index: INT_VAL TWODOTS INT_VAL;
+
 // Aceita multiplas declarações de variaveis no formato
 // VAR
 //    <id> : <type>;
@@ -102,8 +120,8 @@ while_stmt: WHILE expr DO stmt_sect SEMI
     | WHILE expr DO stmt;
 
 // FOR
-for_stmt: FOR ID ':=' expr TO expr DO stmt_sect SEMI
-    | FOR ID ':=' expr TO expr DO stmt ;
+for_stmt: FOR ID ASSIGN expr TO expr DO stmt_sect SEMI
+    | FOR ID ASSIGN expr TO expr DO stmt ;
 
 // Atribuição
 assign_stmt: ID ASSIGN expr SEMI;
@@ -123,7 +141,7 @@ case_else: ELSE stmt_sect
 
 case_l_target_list: case_l_target_list ',' case_l_target
     | case_l_target;
-case_l_target: SQSTR | INT_VAL | INT_VAL '..' INT_VAL;
+case_l_target: SQSTR | INT_VAL | INT_VAL TWODOTS INT_VAL;
 
 
 // Chamada de funções
@@ -289,6 +307,7 @@ RCB    : '{'  ;
 LCB    : '}'  ;
 DOL    : '$'  ;
 HASH   : '#'  ;
+TWODOTS: '..'  ;
 
 // Valores inteiros, decimais e strings
 
