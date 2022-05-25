@@ -68,7 +68,8 @@ type_decl_list: type_decl_list type_decl
 type_decl: ID EQ array_type SEMI;
 
 array_type_list: array_type | type_spec;
-array_type: ARRAY LSB index_list RSB OF array_type_list;
+array_type: ARRAY LSB index_list RSB OF array_type_list
+    | ARRAY OF array_type_list;
 index_list: index
     | index_list ',' index;
 index: INT_VAL TWODOTS INT_VAL;
@@ -88,7 +89,7 @@ id_list: id_list ',' ID
     | ID;
 
 // Definição de tipos de variaveis
-type_spec: INTEGER | REAL | CHAR | BOOLEAN;
+type_spec: INTEGER | REAL | CHAR | BOOLEAN | ID;
 
 // Tipos de statements
 stmt_sect: BEGINE stmt_list END;
@@ -124,7 +125,8 @@ for_stmt: FOR ID ASSIGN expr TO expr DO stmt_sect SEMI
     | FOR ID ASSIGN expr TO expr DO stmt ;
 
 // Atribuição
-assign_stmt: ID ASSIGN expr SEMI;
+assign_stmt: ID ASSIGN expr SEMI
+    | ID array_access ASSIGN expr SEMI;
 
 // Case
 case_stmt: CASE case_arg OF case_target_list END SEMI
@@ -151,6 +153,12 @@ fnc: ID LPAR expr RPAR
     | ID LPAR expr_list RPAR; 
 fnc_stmt: fnc SEMI | ID LPAR fnc RPAR SEMI;
 
+// Acesso ao array
+array_access: LSB array_indexes RSB;
+array_indexes: array_indexes ',' array_index
+    | array_index;
+array_index: expr;
+
 // Expressões
 expr_list: expr_list ',' expr
     | expr;
@@ -170,11 +178,13 @@ expr: expr LT expr
     | expr TIMES expr
     | expr OVER expr
     | LPAR expr RPAR
+    | expr ':' expr
     | fnc
     | INT_VAL
     | REAL_VAL
     | SQSTR 
     | ID
+    | ID array_access
     | TRUE
     | FALSE;
 
@@ -266,7 +276,6 @@ SELF           : S E L F;
 SET            : S E T;
 SHL            : S H L;
 SHR            : S H R;
-STRING         : S T R I N G;
 THEN           : T H E N;
 TO             : T O;
 TYPE           : T Y P E;
