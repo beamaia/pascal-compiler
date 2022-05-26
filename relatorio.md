@@ -28,6 +28,24 @@ Além disso, consegue reconhecer os seguintes tipos de declarações:
 - function (identificável por o EBNF *fnc_and_procedures_sect*).
 - procedure (identificável por o EBNF *fnc_and_procedures_sect*).
 
+### Arrays
+
+Uma atenção específica foi dada para array devido a sua forma diferente dos outros tipos. Para a declaração do array, consideramos a seguinte estrutura (exemplo do arquivo ex11-array.pas).
+
+```py
+Type  
+  TA = Array[0..9,0..9] of Integer;
+  TIntegerArray = Array of Integer;  
+  TIntegerArrayArray = Array of TIntegerArray;  
+  TAOA = Array of array of Integer;  
+ 
+var  
+  A,B : TA;  
+  I,J : Integer; 
+```
+
+Devido ao nome do array poder ser do formato do nome da variável, logo similar ao token ID, o parser passou a identificar um ID como um possível tipo. 
+
 ### ⚙️ Simplificações
 
 Com base nas recomendações do professor, as seguintes funcionalidades não foram implementadas:
@@ -50,7 +68,11 @@ Ao executar este comando, ele executa make e make runall. Isso gera as regras da
 
 ### 🧪 Casos de Testes
 
-Foram criados no total 31 exemplos, sendo 15 de erros sintáticos ou léxicos. 
+Foram criados no total 31 exemplos, sendo 15 de erros sintáticos ou léxicos. Eles possuem o seguinte formato:
+```
+ex{número do exercício}-{descrição sucinta do problema}.pas para casos sem erro
+ex{número do exercício}-{descrição sucinta do problema}-err.pas para casos com erro
+```
 
 ## 🤔 Dificuldades
 
