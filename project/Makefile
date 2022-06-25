@@ -19,25 +19,34 @@ GEN_PATH=lexer
 # Diretório para os casos de teste
 IN=/in
 
+# Diretório aonde está a classe com a função main.
+MAIN_PATH=checker
+
+# Diretório para os arquivos .class
+BIN_PATH=bin
+
 all: antlr javac
 	@echo "Done."
 
-antlr: PASLexer.g
-	$(ANTLR4) -o $(GEN_PATH) PASLexer.g
+antlr: PASLexer.g PASParser.g
+	$(ANTLR4) -no-listener -visitor -o $(GEN_PATH) PASLexer.g PASParser.g
 
 javac:
-	$(JAVAC) $(CLASS_PATH_OPTION) $(GEN_PATH)/*.java
+	rm -rf $(BIN_PATH)
+	mkdir $(BIN_PATH)
+	$(JAVAC) $(CLASS_PATH_OPTION) -d $(BIN_PATH) */*.java
 
 # Veja a explicação no README
+# run:
+# 	cd $(GEN_PATH) && $(GRUN) PASLexer program $(FILE)
+
 run:
-	cd $(GEN_PATH) && $(GRUN) PASLexer program $(FILE)
+	$(JAVA) $(CLASS_PATH_OPTION):$(BIN_PATH) $(MAIN_PATH)/Main $(FILE)
 
 runall:
 	-for FILE in $(IN)/*.pas; do \
-	 	cd $(GEN_PATH) && \
 	 	echo -e "\nRunning $${FILE}" && \
-	 	$(GRUN) PASLexer program $${FILE} && \
-	 	cd .. ; \
+	 	$(JAVA) $(CLASS_PATH_OPTION):$(BIN_PATH) $(MAIN_PATH)/Main $${FILE}; \
 	done;
 
 clean:

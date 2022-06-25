@@ -1,0 +1,41 @@
+* Passos para executar a solução do Lab04 no ANTLR:
+
+1) Edite as variáveis do Makefile como antes.
+
+2) Para rodar o ANTLR e compilar os arquivos gerados:
+
+   $ make
+
+3) Para executar o parser com um único arquivo de entrada:
+
+   $ make run FILE=arquivo_de_teste
+
+4) Se quiser rodar todos os casos de teste de uma vez, basta fazer:
+
+   $ make runall
+
+OBSERVAÇÕES:
+
+Como já visto no laboratório anterior, vamos utilizar um visitor para tudo a
+partir de agora no ANTLR. Isso permite que a gramática fique "limpa", isto é,
+livre de código executável e é a forma recomendada de se escrever o código
+segundo o manual.
+
+O objetivo deste laboratório é desenvolver a segunda parte da análise semântica
+da linguagem. No caso, vamos fazer a verificação e inferência de tipos. Para
+isso, criamos a enumeração typing.Type, que indica os tipos primitivos
+existentes e as tabelas de unificação conforme indicado na versão do Bison para
+este laboratório.
+
+O caminhamento pela Parse Tree é feito de forma top-down. Assim, o visitor
+desenvolvido anteriormente foi extendido para também computar os tipos das
+expressões e verificar o seu uso apropriado. Só lembrando mais uma vez que no
+visitor você é responsável por chamar recursivamente o caminhamento nos filhos
+de um nó. Isso permite então que a gente determine os tipos dos filhos antes,
+através da recursão, e no final, quando ela retorna, a gente decide o tipo do
+nó pai. É por isso que usamos um visitor no lugar do listener, para ter essa
+liberdade de fazer o caminhamento da forma que for necessária. Veja a nova
+implementação em SemanticChecker.java para tentar entender o funcionamento.
+
+No próximo laboratório vamos extender ainda mais o visitador para realizar
+a construção da AST.
