@@ -1,12 +1,7 @@
 program testarray1;  
-Type  
-  TA = Array[0..9,0..9] of Integer;
-  TIntegerArray = Array of Integer;  
-  TIntegerArrayArray = Array of TIntegerArray;  
-  TAOA = Array of array of Integer;  
  
 var  
-  A,B : TA;  
+  A,B : Array[0..9] of Integer;  
   I,J : Integer;  
 begin  
    For I:=0 to 9 do  

@@ -8,7 +8,7 @@ services:
       dockerfile: 'Dockerfile'
     tty: true
     stdin_open: true
-    command: bash -c "make antlr && make javac && make runall"
+    command: bash #-c "make antlr && make javac && make runall"
     volumes:
     - ./project:/project
     - ./in:/in

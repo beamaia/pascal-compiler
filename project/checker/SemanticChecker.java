@@ -188,9 +188,9 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
     }
 
 
-    public showTables() {
+    // public showTables() {
 
-    }
+    // }
 
     
 }

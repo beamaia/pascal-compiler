@@ -14,7 +14,7 @@ options {
 // PARSER
 // ===================================================
 
-program: PROGRAM ID SEMI types_sect vars_sect fnc_and_procedures_sect stmt_sect DOT;
+program: PROGRAM ID SEMI vars_sect fnc_and_procedures_sect stmt_sect DOT;
 
 // Aceita functions e procedures em qualquer ordem
 fnc_and_procedures_sect: opt_fnc_and_procedures_sect;
@@ -64,25 +64,6 @@ procedure_param_decl_list: procedure_param_decl_list SEMI procedure_param_decl
 procedure_param_decl: id_list COLON type_spec
     | VAR id_list COLON type_spec;
 
-// Aceita multiplas declarações de arrays no formato
-// TYPE
-//    <id> = <type>;
-//    ... restante dos arrays 
-types_sect: 
-    | TYPE opt_type_decl;
-opt_type_decl:  
-    | type_decl_list;
-type_decl_list: type_decl_list type_decl 
-    | type_decl;
-type_decl: ID EQ array_type SEMI;
-
-array_type_list: array_type | type_spec;
-array_type: ARRAY LSB index_list RSB OF array_type_list
-    | ARRAY OF array_type_list;
-index_list: index
-    | index_list COMMA index;
-index: INT_VAL TWODOTS INT_VAL;
-
 // Aceita multiplas declarações de variaveis no formato
 // VAR
 //    <id> : <type>;
@@ -98,12 +79,16 @@ id_list: id_list COMMA ID
     | ID;
 
 // Definição de tipos de variaveis
-type_spec: INTEGER #intType 
+type_spec: primitive_types #primitive_types_spec
+        | ARRAY LSB INT_VAL TWODOTS INT_VAL RSB OF primitive_types #array_type_spec
+        ; 
+
+//tipos primitivos do Pascal
+primitive_types: INTEGER #intType 
         | REAL #realType
         | CHAR #charType
         | BOOLEAN #boolType
-        | ID #idType
-        ; 
+        ;
 
 // Tipos de statements
 stmt_sect: BEGINE stmt_list END;
