@@ -43,13 +43,12 @@ public class Main {
 			return;
 		}
 
-		System.out.println(tokens);
-
 		/// Cria o analisador semântico e visita a ParseTree para
 		// fazer a análise.
 		SemanticChecker checker = new SemanticChecker();
 		checker.visit(tree);
 		
+		checker.showTables();
 		// // Saída final.
 		//if (checker.hasPassed()) {
 		//	System.out.println("PARSE SUCCESSFUL!");
