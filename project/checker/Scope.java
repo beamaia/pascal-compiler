@@ -1,4 +1,4 @@
-package types;
+package checker;
 
 public enum Scope {
     GLOBAL {
