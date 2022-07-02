@@ -12,8 +12,8 @@ import java.util.Formatter;
 
 public class VarTable extends HashMap<String, EntryInput> {
     
-	public boolean addVar(String s, int line, Type type) {
-		EntryInput entry = new EntryInput(s, line, type);
+	public boolean addVar(String s, int line, Type type, boolean isArray) {
+		EntryInput entry = new EntryInput(s, line, type, isArray);
 		if ( containsKey(s) ) {
             return false;
         }

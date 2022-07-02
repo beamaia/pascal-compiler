@@ -54,26 +54,11 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
 
         // Visita a declaração de tipo para definir a variável lastDeclType.
     	visit(ctx.type_spec());
+
+        visit(ctx.id_list());
         
-        // For each id in the id_list, split string by comma
-        String[] ids = ctx.id_list().getText().split(",");
-
-        int line = (ctx.getStart().getLine());
-
-        // For each id, add to variable table
-        for (String id : ids) {
-            // Check if id is already in table
-           if (variableTable.containsKey(id)) {
-               System.out.println("Error: variable " + id + " already declared");
-               passed = false;
-               return NO_TYPE;  
-           } else {
-                // Add to table
-                variableTable.addVar(id, line ,lastDeclType);
-            }
-        }
-
-        System.out.println(this.variableTable.toString());
+       
+        
 
     	return NO_TYPE;
     }
@@ -100,6 +85,29 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
     public Type visitCharType(CharTypeContext ctx) {
         this.lastDeclType = CHAR_TYPE;
         return CHAR_TYPE;
+    }
+
+    @Override
+    public Type visitIdNode(PASParser.IdNodeContext ctx) {
+        String id = ctx.getText();
+        System.out.println("id: " + id);
+        int line = (ctx.getStart().getLine());
+
+        
+        // Check if id is already in table
+        if (variableTable.containsKey(id)) {
+            System.out.println("Error: variable " + id + " already declared");
+            passed = false;
+            return NO_TYPE;  
+        } else {
+            // Add to table
+            variableTable.addVar(id, line ,lastDeclType, false);
+        }
+        
+
+        System.out.println(this.variableTable.toString());
+
+        return NO_TYPE;
     }
 
     // // Visita a regra expr: expr op=(PLUS | MINUS) expr

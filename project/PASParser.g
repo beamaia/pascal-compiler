@@ -75,12 +75,13 @@ opt_var_decl:
 var_decl_list: var_decl_list var_decl 
     | var_decl;
 var_decl: id_list COLON type_spec SEMI;
-id_list: id_list COMMA ID
-    | ID;
+id_list: id_list COMMA id_node
+    | id_node;
+id_node: ID # idNode;
 
 // Definição de tipos de variaveis
-type_spec: primitive_types #primitive_types_spec
-        | ARRAY LSB INT_VAL TWODOTS INT_VAL RSB OF primitive_types #array_type_spec
+type_spec: primitive_types #primitiveTypeSpec
+        | ARRAY LSB INT_VAL TWODOTS INT_VAL RSB OF primitive_types #arrayTypeSpec
         ; 
 
 //tipos primitivos do Pascal
