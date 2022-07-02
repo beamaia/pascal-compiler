@@ -16,6 +16,13 @@ import parser.PASParser.RealTypeContext;
 import parser.PASParser.BoolTypeContext;
 import parser.PASParser.CharTypeContext;
 
+import parser.PASParser.IdNodeContext;
+import parser.PASParser.ArrayTypeDeclContext;
+import parser.PASParser.Array_startContext;
+import parser.PASParser.Array_endContext;
+
+
+
 import parser.PASParser.ExprOpLogicContext;
 import parser.PASParser.ExprUnaryMinusContext;
 import parser.PASParser.ExprArithmeticContext;
@@ -37,15 +44,19 @@ import tables.EntryInput;
 import tables.EntryArray;
 import tables.StrTable;
 import tables.VarTable;
+import tables.FuncTable;
 
 import types.Type;
+import checker.Scope;
 
 public class SemanticChecker extends PASParserBaseVisitor<Type> {
     
     Type lastDeclType;
+    Scope lastEnteredScope;
 
     private StrTable stringTable;
     private VarTable variableTable = new VarTable();
+    private FuncTable functionTable = new FuncTable();
 
     private boolean passed = true;
     private boolean isArray = false;
@@ -92,9 +103,8 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
     }
 
     @Override
-    public Type visitIdNode(PASParser.IdNodeContext ctx) {
+    public Type visitIdNode(IdNodeContext ctx) {
         String id = ctx.getText();
-        System.out.println("id: " + id);
         int line = (ctx.getStart().getLine());
 
         
@@ -114,14 +124,11 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
             variableTable.addVar(entry);
         }
         
-
-        System.out.println(this.variableTable.toString());
-
         return NO_TYPE;
     }
 
     @Override
-    public Type visitArrayTypeDecl(PASParser.ArrayTypeDeclContext ctx) {
+    public Type visitArrayTypeDecl(ArrayTypeDeclContext ctx) {
         this.isArray = true;
         visit(ctx.array_start());
         visit(ctx.array_end());
@@ -129,15 +136,13 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
     }
 
     @Override
-    public Type visitArray_start(PASParser.Array_startContext ctx) {
-        System.out.println("array start: " + ctx.getText());
+    public Type visitArray_start(Array_startContext ctx) {
         this.start = Integer.parseInt(ctx.getText());
         return NO_TYPE;
     }
 
     @Override
-    public Type visitArray_end(PASParser.Array_endContext ctx) {
-        System.out.println("array end: " + ctx.getText());
+    public Type visitArray_end(Array_endContext ctx) {
         this.end = Integer.parseInt(ctx.getText());
         return NO_TYPE;
     }
@@ -228,9 +233,12 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
     }
 
 
-    // public showTables() {
-
-    // }
+    public Type showTables() {
+        System.out.println(variableTable);
+        System.out.println("*******************************");
+        System.out.println(functionTable);
+        return NO_TYPE;
+    }
 
     
 }
