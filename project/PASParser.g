@@ -81,8 +81,16 @@ id_node: ID # idNode;
 
 // Definição de tipos de variaveis
 type_spec: primitive_types #primitiveTypeSpec
-        | ARRAY LSB INT_VAL TWODOTS INT_VAL RSB OF primitive_types #arrayTypeSpec
+        | array_type_decl primitive_types #arrayTypeSpec
         ; 
+array_type_decl: ARRAY LSB array_start TWODOTS array_end RSB OF #arrayTypeDecl;
+
+array_start: integer_val;
+array_end: integer_val;
+
+//para aceitar inteiros positivos e negativos no array
+integer_val: INT_VAL
+    | MINUS INT_VAL;
 
 //tipos primitivos do Pascal
 primitive_types: INTEGER #intType 

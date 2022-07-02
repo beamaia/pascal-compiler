@@ -26,7 +26,7 @@ MAIN_PATH=checker
 BIN_PATH=bin
 
 # Modificador para o teste de um arquivo só.
-FILE=$(IN)/ex02-assign-types.pas
+FILE=$(IN)/ex11-array.pas
 
 all: antlr javac
 	@echo "Done."

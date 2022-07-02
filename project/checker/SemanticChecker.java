@@ -34,6 +34,7 @@ import parser.PASParser.ExprBooleanValContext;
 import parser.PASParser.Var_declContext;
 
 import tables.EntryInput;
+import tables.EntryArray;
 import tables.StrTable;
 import tables.VarTable;
 
@@ -47,18 +48,21 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
     private VarTable variableTable = new VarTable();
 
     private boolean passed = true;
+    private boolean isArray = false;
     
+    private int start;
+    private int end;
     
     @Override
     public Type visitVar_decl(Var_declContext ctx) {
 
+        this.isArray = false;
+
         // Visita a declaração de tipo para definir a variável lastDeclType.
     	visit(ctx.type_spec());
 
+        // Visita a declaração dos ids para colocar a variável na tabela de variáveis.
         visit(ctx.id_list());
-        
-       
-        
 
     	return NO_TYPE;
     }
@@ -101,12 +105,40 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
             return NO_TYPE;  
         } else {
             // Add to table
-            variableTable.addVar(id, line ,lastDeclType, false);
+            EntryInput entry;
+            if(isArray){
+                entry = new EntryArray(id, line, lastDeclType, start, end);
+            }else{
+                entry = new EntryInput(id, line, lastDeclType, false);
+            }
+            variableTable.addVar(entry);
         }
         
 
         System.out.println(this.variableTable.toString());
 
+        return NO_TYPE;
+    }
+
+    @Override
+    public Type visitArrayTypeDecl(PASParser.ArrayTypeDeclContext ctx) {
+        this.isArray = true;
+        visit(ctx.array_start());
+        visit(ctx.array_end());
+        return NO_TYPE;
+    }
+
+    @Override
+    public Type visitArray_start(PASParser.Array_startContext ctx) {
+        System.out.println("array start: " + ctx.getText());
+        this.start = Integer.parseInt(ctx.getText());
+        return NO_TYPE;
+    }
+
+    @Override
+    public Type visitArray_end(PASParser.Array_endContext ctx) {
+        System.out.println("array end: " + ctx.getText());
+        this.end = Integer.parseInt(ctx.getText());
         return NO_TYPE;
     }
 

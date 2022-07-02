@@ -2,6 +2,9 @@ program testarray1;
  
 var  
   A,B : Array[0..9] of Integer;  
+  D,E : Array[1..3] of Real;  
+  G,H : Array[-1..4] of Char;  
+
   I,J : Integer;  
 begin  
    For I:=0 to 9 do  

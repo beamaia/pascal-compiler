@@ -12,8 +12,8 @@ import java.util.Formatter;
 
 public class VarTable extends HashMap<String, EntryInput> {
     
-	public boolean addVar(String s, int line, Type type, boolean isArray) {
-		EntryInput entry = new EntryInput(s, line, type, isArray);
+	public boolean addVar(EntryInput entry) {
+        String s = entry.name;
 		if ( containsKey(s) ) {
             return false;
         }
@@ -32,6 +32,11 @@ public class VarTable extends HashMap<String, EntryInput> {
     public Type getType(String s) {
         return get(s).type;
     }
+
+    public boolean getIsArray(String s) {
+        return get(s).isArray;
+    }
+
 	
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -39,8 +44,7 @@ public class VarTable extends HashMap<String, EntryInput> {
 		f.format("Variables table:\n");
 		// iterating hashmap<String, EntryInput>
         for (String key : keySet()) {
-            f.format("EntryInput %s -- name: %s, line: %d, type: %s\n", key,
-                     getName(key), getLine(key), getType(key).toString());
+            f.format("%s", get(key).toString());
         }
 		f.close();
 		return sb.toString();
