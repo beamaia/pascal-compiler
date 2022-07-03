@@ -1,23 +1,26 @@
 package tables;
 
 import java.util.HashMap;
-import tables.EntryInput;
+import tables.EntryStr;
 
 import types.Type;
 
 import java.lang.StringBuilder;
 import java.util.Formatter;
 
-public class StrTable extends HashMap<Integer, String> {
+public class StrTable extends HashMap<String, EntryStr> {
 
     public StrTable() {
         super();
     }
     
-    public int add(String s) {
-        int idx = this.size();
-        this.put(idx, s);
-        return idx;
+    public boolean addStr(EntryStr entry) {
+        String s = entry.name;
+		if ( containsKey(s) ) {
+            return false;
+        }
+        put(s, entry);
+        return true;
     }
     
     public String get(int i) {
@@ -27,9 +30,10 @@ public class StrTable extends HashMap<Integer, String> {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         Formatter f = new Formatter(sb);
+
         f.format("Strings table:\n");
-        for (int i = 0; i < this.size(); i++) {
-            f.format("EntryInput %d -- %s\n", i, this.get(i));
+        for (String key : keySet()) {
+            f.format("%s", get(key).toString());
         }
         f.close();
         return sb.toString();
