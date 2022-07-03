@@ -1,12 +1,11 @@
 program exOplogicErr;
 
 var
-    a: integer;
-    b: char;
+    a, c: integer;
+    b, d: char;
 begin
-    a := 1;
-    b := 'a';
     c := a and b;
+    c := a or c;
     c := a or b;
     c := a > b;
     c := a >= b;
