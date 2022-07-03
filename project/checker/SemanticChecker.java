@@ -16,7 +16,7 @@ import parser.PASParser.RealTypeContext;
 import parser.PASParser.BoolTypeContext;
 import parser.PASParser.CharTypeContext;
 
-import parser.PASParser.IdNodeContext;
+import parser.PASParser.Id_nodeContext;
 import parser.PASParser.ArrayTypeDeclContext;
 import parser.PASParser.Array_startContext;
 import parser.PASParser.Array_endContext;
@@ -38,8 +38,13 @@ import parser.PASParser.ExprBooleanValContext;
 
 import parser.PASParser.Var_declContext;
 
+import parser.PASParser.Fnc_sign_declContext;
+import parser.PASParser.Fnc_sign_param_declContext;
+import parser.PASParser.Proc_func_id_nodeContext;
+
 import tables.EntryInput;
 import tables.EntryArray;
+import tables.EntryFunc;
 import tables.StrTable;
 import tables.VarTable;
 import tables.FuncTable;
@@ -50,7 +55,7 @@ import checker.Scope;
 public class SemanticChecker extends PASParserBaseVisitor<Type> {
     
     Type lastDeclType;
-    Scope lastEnteredScope;
+    Scope lastEnteredScope = Scope.GLOBAL;
 
     private StrTable stringTable;
     private VarTable variableTable = new VarTable();
@@ -61,6 +66,8 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
     
     private int start;
     private int end;
+
+    private String lastFuncVisited;
     
     @Override
     public Type visitVar_decl(Var_declContext ctx) {
@@ -74,6 +81,73 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
         visit(ctx.id_list());
 
     	return NO_TYPE;
+    }
+
+    @Override
+    public Type visitFnc_sign_param_decl(Fnc_sign_param_declContext ctx) {
+        
+        this.isArray = false;
+
+        // Visita a declaração de tipo para definir a variável lastDeclType.
+    	visit(ctx.type_spec());
+
+        // Visita a declaração dos ids para colocar a variável na tabela de variáveis.
+        visit(ctx.proc_func_id_list());
+
+    	return NO_TYPE;
+    }
+
+    @Override
+    public Type visitFnc_sign_decl(Fnc_sign_declContext ctx) {
+        this.lastEnteredScope = Scope.FUNCTION;
+
+        String funcName = ctx.ID().getText();
+        int startLine = ctx.getStart().getLine();
+
+        if  (functionTable.containsKey(funcName)) {
+            System.out.println("The function " + funcName + " has already been declared!");
+        } else {
+            EntryFunc newFunc = new EntryFunc(funcName, startLine);
+            this.lastFuncVisited = funcName;
+            functionTable.addFunc(newFunc);
+            System.out.println(newFunc);
+            System.out.println(lastEnteredScope);
+
+            // Visita parametros para adicionar a lista de simbolos da funcao
+            visit(ctx.fnc_sign_params_sect());
+            visit(ctx.func_vars_sect());
+        }
+
+        return NO_TYPE;
+    }
+
+    @Override
+    public Type visitProc_func_id_node(Proc_func_id_nodeContext ctx) {
+        String id = ctx.getText();
+        int line = ctx.getStart().getLine();
+
+        
+        // Check if id is already in global table
+        if (variableTable.containsKey(id)) {
+            System.out.println("Error: variable " + id + " already declared");
+            passed = false;
+            return NO_TYPE;  
+        } else if (functionTable.funcContainsVar(lastFuncVisited, id)) {
+            System.out.println("Error: variable " + id + " already declared in function");
+            passed = false;
+            return NO_TYPE;  
+        }  else {
+            // Add to function table
+            EntryInput entry;
+            if(isArray){
+                entry = new EntryArray(id, line, lastDeclType, start, end);
+            }else{
+                entry = new EntryInput(id, line, lastDeclType, false);
+            }
+            functionTable.addVarToFunc(lastFuncVisited, entry);
+        }
+        
+        return NO_TYPE;   
     }
 
     @Override
@@ -101,7 +175,7 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
     }
 
     @Override
-    public Type visitIdNode(IdNodeContext ctx) {
+    public Type visitId_node(Id_nodeContext ctx) {
         String id = ctx.getText();
         int line = (ctx.getStart().getLine());
 
