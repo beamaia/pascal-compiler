@@ -1,4 +1,4 @@
-program exOplogicErr;
+program exArithmetics;
 
 var
     a: integer;
@@ -6,6 +6,14 @@ var
 begin
     a := 1;
     b := 3.14;
+
+    c:= 1 + 3.14;
+    c:= 1 - 3.14;
+    c:= 1 * 3.14;
+    c:= 1 / 3.14;
+
+    c:= 'a' + 'b';
+    c:= 'aaaa' - 'aaaab';
 
     c := a + b;
     c := a * b;
@@ -22,6 +30,8 @@ begin
     c := b / b;
     c := b - b;
 
-    if a + b then
+    c:= a + 'b';
+
+    if a + c then
         writeln('Number 1 is bigger');
 end.
