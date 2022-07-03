@@ -6,25 +6,25 @@ var
   G,H : Array[-1..4] of Char;  
 
   I,J : Integer;  
+  L: Real;
 begin  
-   For I:=0 to 9 do  
-      For J:=0 to 9 do  
-         A[I,J]:=I*J;  
+   For I:=0 to 7 do  
+      For J:=0 to 7 do  
+         A[I] := A[I]*A[J];  
    For I:=0 to 9 do  
       begin  
-      For J:=0 to 9 do  
-       (*  Write(A[I,J]:2,' ');  *)
+      For J:=0 to 8 do  
       Writeln;  
       end;  
    B:=A;  
    Writeln;  
    For I:=0 to 9 do  
-      For J:=0 to 9 do  
-         A[9-I,9-J]:=I*J;  
+      For J:=0 to 10 do  
+         A[9-K]:=I*J;  
    For I:=0 to 9 do  
       begin  
-      For J:=0 to 9 do  
-         Write(B[I,J]:2,' ');  
+      For J:=0 to 5 do  
+         Writeln(B[L]);  
       Writeln;  
       end;  
 end.
