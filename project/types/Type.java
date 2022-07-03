@@ -28,7 +28,7 @@ public enum Type {
             return "no_type";
         }
 	},
-    STRING {
+    STRING_TYPE {
         public String toString() {
             return "string";
         }
