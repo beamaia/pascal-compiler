@@ -26,7 +26,7 @@ MAIN_PATH=checker
 BIN_PATH=bin
 
 # Modificador para o teste de um arquivo só.
-FILE=$(IN)/ex15-procedures-and-functions.pas
+FILE=$(IN)/ex34-arithmetics.pas
 
 all: antlr javac
 	@echo "Done."
