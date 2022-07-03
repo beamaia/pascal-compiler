@@ -129,8 +129,7 @@ stmt: if_stmt
     | assign_stmt 
     | fnc_stmt
     | while_stmt
-    | for_stmt
-    | case_stmt;
+    | for_stmt;
 
 // If then else
 if_stmt: IF expr THEN stmt_sect SEMI
@@ -156,24 +155,6 @@ for_stmt: FOR ID ASSIGN expr TO expr DO stmt_sect SEMI
 assign_stmt: ID ASSIGN expr SEMI
     | ID array_access ASSIGN expr SEMI;
 
-// Case
-case_stmt: CASE case_arg OF case_target_list END SEMI
-    | CASE case_arg OF case_target_list case_else END SEMI;
-case_arg: LPAR ID RPAR
-    | ID;
-
-case_target_list: case_target_list case_target
-    | case_target;
-case_target: case_l_target_list COLON stmt_sect SEMI
-    | case_l_target_list COLON stmt;
-case_else: ELSE stmt_sect
-    | ELSE stmt;
-
-case_l_target_list: case_l_target_list COMMA case_l_target
-    | case_l_target;
-case_l_target: SQSTR | INT_VAL | INT_VAL TWODOTS INT_VAL;
-
-
 // Chamada de funções
 fnc: ID LPAR expr RPAR 
     | ID 
@@ -193,7 +174,6 @@ expr: left=expr op=(LT | LTE | BT | BTE | EQ | NEQ | AND | OR) right=expr     # 
     | left=expr op=(PLUS | OVER | TIMES | MINUS) right=expr   # exprArithmetic
     | left=expr op=(DIV | MOD) right=expr    # exprDiv
     | LPAR expr RPAR   # exprLparRpar
-    | left=expr COLON right=expr  # exprColon
     | INT_VAL          # exprIntVal
     | REAL_VAL         # exprRealVal
     | CHAR_VAL         # exprCharVal
