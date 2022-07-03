@@ -84,7 +84,6 @@ proc_func_id_list: proc_func_id_list COMMA proc_func_id_node
 proc_func_id_node: ID;
 
 
-
 // Aceita multiplas declarações de variaveis no formato
 // VAR
 //    <id> : <type>;
@@ -183,27 +182,25 @@ fnc: ID LPAR expr RPAR
 fnc_stmt: fnc SEMI | ID LPAR fnc RPAR SEMI;
 
 // Acesso ao array
-array_access: LSB array_indexes RSB;
-array_indexes: array_indexes COMMA array_index
-    | array_index;
-array_index: expr;
+array_access: LSB array_index RSB;
+array_index: integer_val;
 
 // Expressões
 expr_list: expr_list COMMA expr
     | expr;
-expr: expr op=(LT | LTE | BT | BTE | EQ | NEQ | AND | OR) expr     # exprOpLogic
+expr: left=expr op=(LT | LTE | BT | BTE | EQ | NEQ | AND | OR) right=expr     # exprOpLogic
     | MINUS expr       # exprUnaryMinus
-    | expr op=(PLUS | OVER | TIMES | MINUS) expr   # exprArithmetic
-    | expr op=(DIV | MOD) expr    # exprDiv
+    | left=expr op=(PLUS | OVER | TIMES | MINUS) right=expr   # exprArithmetic
+    | left=expr op=(DIV | MOD) right=expr    # exprDiv
     | LPAR expr RPAR   # exprLparRpar
-    | expr COLON expr  # exprColon
-    | fnc              # exprFnc
+    | left=expr COLON right=expr  # exprColon
     | INT_VAL          # exprIntVal
     | REAL_VAL         # exprRealVal
     | CHAR_VAL         # exprCharVal
     | SQSTR            # exprStrVal
     | ID               # exprId
     | ID array_access  # exprArrayAccess
+    | fnc              # exprFnc
     | TRUE             # exprBooleanVal
     | FALSE            # exprBooleanVal
     ;    
