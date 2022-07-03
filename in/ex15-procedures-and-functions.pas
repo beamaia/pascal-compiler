@@ -2,7 +2,7 @@ program exProcedure;
 var
    a, b, c,  min: integer;
 
-function min(num1, num2: integer; f1,f2 : string ): integer;
+function min(num1, num2: integer; f1,f2 : char ): integer;
 
 var
    (* local variable declaration *)
@@ -30,7 +30,7 @@ begin
       m:= z;
 end; { end of procedure findMin }  
 
-function max(num1, num2: integer; f1,f2 : string ): integer;
+function max(num1, num2: integer; f1,f2 : char ): integer;
 
 var
    (* local variable declaration *)
