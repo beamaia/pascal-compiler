@@ -10,7 +10,7 @@ import java.util.Formatter;
 
 public class FuncTable extends HashMap<String, EntryFunc> {
 
-    public boolean addVar(EntryFunc entry) {
+    public boolean addFunc(EntryFunc entry) {
         String s = entry.name;
         if ( containsKey(s) ) {
             return false;
@@ -20,6 +20,16 @@ public class FuncTable extends HashMap<String, EntryFunc> {
         return true;
 	}
 
+    public boolean funcContainsVar(String funcName, String varName) {
+        EntryFunc func = get(funcName);
+        return func.containsKey(varName);
+    }
+
+    public boolean addVarToFunc(String funcName, EntryInput entry) {
+        EntryFunc func = get(funcName);
+        return func.addVar(entry);
+    }
+
     public String toString() {
 		StringBuilder sb = new StringBuilder();
 		Formatter f = new Formatter(sb);
@@ -27,7 +37,7 @@ public class FuncTable extends HashMap<String, EntryFunc> {
         
 		// iterating hashmap<String, EntryInput>
         for (String key : keySet()) {
-            f.format("%s", get(key).toString());
+            f.format("%s\n", get(key).toString());
         }
 		f.close();
 		return sb.toString();
