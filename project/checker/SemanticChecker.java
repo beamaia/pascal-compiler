@@ -6,6 +6,7 @@ import static types.Type.REAL_TYPE;
 import static types.Type.BOOL_TYPE;
 import static types.Type.CHAR_TYPE;
 import static types.Type.NO_TYPE;
+import static types.Type.STRING_TYPE;
 
 import org.antlr.v4.runtime.Token;
 
@@ -93,8 +94,15 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
         String funcName = ctx.ID().getText();
         int startLine = ctx.getStart().getLine();
 
-        if  (functionTable.containsKey(funcName)) {
+        if (variableTable.containsKey(funcName)) {
+            System.out.println("There is already a variable with " + funcName + " name!");
+            passed = false;
+            return NO_TYPE;
+        }
+        else if  (functionTable.containsKey(funcName)) {
             System.out.println("The function " + funcName + " has already been declared!");
+            passed = false;
+            return NO_TYPE;
         } else {
             EntryFunc newFunc = new EntryFunc(funcName, startLine);
             this.lastFuncVisited = funcName;
@@ -116,8 +124,15 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
         String procName = ctx.ID().getText();
         int startLine = ctx.getStart().getLine();
 
-        if  (functionTable.containsKey(procName)) {
+        if (variableTable.containsKey(procName)) {
+            System.out.println("There is already a variable with " + procName + " name!");
+            passed = false;
+            return NO_TYPE;
+        }
+        else if  (functionTable.containsKey(procName)) {
             System.out.println("The procedure " + procName + " has already been declared!");
+            passed = false;
+            return NO_TYPE;
         } else {
             EntryFunc newProc = new EntryFunc(procName, startLine);
             this.lastFuncVisited = procName;
@@ -246,31 +261,41 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
 
     @Override
     public Type visitAssign_stmt(Assign_stmtContext ctx) {
-        System.out.println(ctx.getText());
+        System.out.println("\nvisitin expr " + ctx.getText());
         visit(ctx.expr());
         return NO_TYPE;
     }
 
 	@Override
 	public Type visitExprArithmetic(ExprArithmeticContext ctx) {
-		Type l = visit(ctx.expr(0));
-		Type r = visit(ctx.expr(1));
+		Type l = visit(ctx.left);
+		Type r = visit(ctx.right);
 
-		if (l == NO_TYPE || r == NO_TYPE) {
-			return NO_TYPE;
-		}
+        // System.out.println("inside expr");
+        System.out.println(ctx.getText());
 
 		Type unif = NO_TYPE;
         System.out.println("l: " + l + " r: " + r);
 
-		if (ctx.op.getType() == PASParser.PLUS || ctx.op.getType() == PASParser.MINUS || ctx.op.getType() == PASParser.TIMES || ctx.op.getType() == PASParser.OVER) {
+        if (l == STRING_TYPE || r == STRING_TYPE) {
+            typeError(ctx.op.getLine(), ctx.op.getText(), l, r);
+            passed = false;
+            return NO_TYPE;
+
+        }
+
+        int op = ctx.op.getType();
+		if (op == PASParser.PLUS || op == PASParser.MINUS || op == PASParser.TIMES || op == PASParser.OVER) {
 			unif = l.unifyArith(r);
             System.out.println("Unified type: " + unif);
 		} 
 
 		if (unif == NO_TYPE) {
 			typeError(ctx.op.getLine(), ctx.op.getText(), l, r);
+            passed = false;
+            return NO_TYPE;
 		}
+
 		return unif;
 	}
 
@@ -313,24 +338,44 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
     public Type visitExprFnc(ExprFncContext ctx) {
         return NO_TYPE;
     }
+
+    @Override
     public Type visitExprIntVal(ExprIntValContext ctx) {
         return INT_TYPE;
     }
+
+    @Override
     public Type visitExprRealVal(ExprRealValContext ctx) {
         return REAL_TYPE;
     }
+
+    @Override
     public Type visitExprCharVal(ExprCharValContext ctx) {
         return CHAR_TYPE;
     }
 
+    @Override
     public Type visitExprId(ExprIdContext ctx) {
-        return NO_TYPE;
+        String name = ctx.getText();
+
+        if (variableTable.containsKey(name)) {
+            System.out.println();
+            return variableTable.getType(name);
+        } else {
+            System.out.println("Error: variable " + name + " not declared");
+            passed = false;
+            return NO_TYPE;
+        }
     }
+
     public Type visitExprArrayAccess(ExprArrayAccessContext ctx) {
+        System.out.println("visitin array expr" + ctx.getText());
         return NO_TYPE;
     }
+
+    @Override
     public Type visitExprBooleanVal(ExprBooleanValContext ctx) {
-        return NO_TYPE;
+        return BOOL_TYPE;
     }
 
     @Override
@@ -349,9 +394,8 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
             stringTable.addStr(entry);
         }
 
-		return NO_TYPE;
+		return STRING_TYPE;
 	}
-
 
     public Type showTables() {
         System.out.println(variableTable);
@@ -361,6 +405,4 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
         System.out.println(stringTable);
         return NO_TYPE;
     }
-
-    
 }
