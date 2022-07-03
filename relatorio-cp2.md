@@ -26,3 +26,7 @@ Consideramos a seguintes possiveis operacoes aritmeticas:
 - +,-,/,*: Apenas inteiro com inteiro, inteiro com real e real com real
 - div: Apenas inteiro com inteiro
 - op logicos:  
+
+Retiramos o switch case
+Retiramos o type
+Simplificamos para aceitar apenas arrays (n pode matrizes de dimensoes maiores que 1)
