@@ -1,9 +1,9 @@
 package checker;
 
+import types.Type;
 import static types.Type.INT_TYPE;
 import static types.Type.REAL_TYPE;
 import static types.Type.BOOL_TYPE;
-import static types.Type.STRING;
 import static types.Type.CHAR_TYPE;
 import static types.Type.NO_TYPE;
 
@@ -43,14 +43,16 @@ import parser.PASParser.Fnc_sign_param_declContext;
 import parser.PASParser.Proc_func_id_nodeContext;
 import parser.PASParser.Procedures_declContext;
 
+import parser.PASParser.Assign_stmtContext;
+
 import tables.EntryInput;
+import tables.EntryStr;
 import tables.EntryArray;
 import tables.EntryFunc;
 import tables.StrTable;
 import tables.VarTable;
 import tables.FuncTable;
 
-import types.Type;
 import checker.Scope;
 
 public class SemanticChecker extends PASParserBaseVisitor<Type> {
@@ -58,7 +60,7 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
     Type lastDeclType;
     Scope lastEnteredScope = Scope.GLOBAL;
 
-    private StrTable stringTable;
+    private StrTable stringTable = new StrTable();
     private VarTable variableTable = new VarTable();
     private FuncTable functionTable = new FuncTable();
 
@@ -241,28 +243,36 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
         return NO_TYPE;
     }
 
-    // // Visita a regra expr: expr op=(PLUS | MINUS) expr
-	// @Override
-	// public Type visitPlusMinus(PlusMinusContext ctx) {
-	// 	Type l = visit(ctx.expr(0));
-	// 	Type r = visit(ctx.expr(1));
-	// 	if (l == NO_TYPE || r == NO_TYPE) {
-	// 		return NO_TYPE;
-	// 	}
-	// 	Type unif;
-	// 	// Aqui precisamos diferenciar entre '+' e '-', 
-	// 	// por isso que a regra na gramática associa o nome 'op' ao
-	// 	// operador.
-	// 	if (ctx.op.getType() == EZParser.PLUS) {
-	// 		unif = l.unifyPlus(r);
-	// 	} else {
-	// 		unif = l.unifyOtherArith(r);
-	// 	}
-	// 	if (unif == NO_TYPE) {
-	// 		typeError(ctx.op.getLine(), ctx.op.getText(), l, r);
-	// 	}
-	// 	return unif;
-	// }
+
+    @Override
+    public Type visitAssign_stmt(Assign_stmtContext ctx) {
+        System.out.println(ctx.getText());
+        visit(ctx.expr());
+        return NO_TYPE;
+    }
+
+	@Override
+	public Type visitExprArithmetic(ExprArithmeticContext ctx) {
+		Type l = visit(ctx.expr(0));
+		Type r = visit(ctx.expr(1));
+
+		if (l == NO_TYPE || r == NO_TYPE) {
+			return NO_TYPE;
+		}
+
+		Type unif = NO_TYPE;
+        System.out.println("l: " + l + " r: " + r);
+
+		if (ctx.op.getType() == PASParser.PLUS || ctx.op.getType() == PASParser.MINUS || ctx.op.getType() == PASParser.TIMES || ctx.op.getType() == PASParser.OVER) {
+			unif = l.unifyArith(r);
+            System.out.println("Unified type: " + unif);
+		} 
+
+		if (unif == NO_TYPE) {
+			typeError(ctx.op.getLine(), ctx.op.getText(), l, r);
+		}
+		return unif;
+	}
 
     private void typeError(int lineNo, String op, Type t1, Type t2) {
     	System.out.printf("SEMANTIC ERROR (%d): incompatible types for operator '%s', LHS is '%s' and RHS is '%s'.\n",
@@ -286,12 +296,11 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
         }
         return unif;
     }
+
     public Type visitExprUnaryMinus(ExprUnaryMinusContext ctx) {
         return NO_TYPE;
     }
-    public Type visitExprArithmetic(ExprArithmeticContext ctx) {
-        return NO_TYPE;
-    }
+
     public Type visitExprDiv(ExprDivContext ctx) {
         return NO_TYPE;
     }
@@ -313,9 +322,7 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
     public Type visitExprCharVal(ExprCharValContext ctx) {
         return CHAR_TYPE;
     }
-    public Type visitExprStrVal(ExprStrValContext ctx) {
-        return STRING;
-    }
+
     public Type visitExprId(ExprIdContext ctx) {
         return NO_TYPE;
     }
@@ -326,11 +333,32 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
         return NO_TYPE;
     }
 
+    @Override
+	public Type visitExprStrVal(ExprStrValContext ctx) {
+		// Adiciona a string na tabela de strings.
+        String id = ctx.getText();
+        int line = (ctx.getStart().getLine());
+
+        if (stringTable.containsKey(id)) {
+            System.out.println("Error: string " + id + " already declared");
+            passed = false;
+            return NO_TYPE;
+        } else {
+            // Add to table
+            EntryStr entry = new EntryStr(id, line);
+            stringTable.addStr(entry);
+        }
+
+		return NO_TYPE;
+	}
+
 
     public Type showTables() {
         System.out.println(variableTable);
         System.out.println("*******************************");
         System.out.println(functionTable);
+        System.out.println("*******************************");
+        System.out.println(stringTable);
         return NO_TYPE;
     }
 
