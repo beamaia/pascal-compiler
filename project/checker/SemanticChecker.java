@@ -41,6 +41,7 @@ import parser.PASParser.Var_declContext;
 import parser.PASParser.Fnc_sign_declContext;
 import parser.PASParser.Fnc_sign_param_declContext;
 import parser.PASParser.Proc_func_id_nodeContext;
+import parser.PASParser.Procedures_declContext;
 
 import tables.EntryInput;
 import tables.EntryArray;
@@ -84,20 +85,6 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
     }
 
     @Override
-    public Type visitFnc_sign_param_decl(Fnc_sign_param_declContext ctx) {
-        
-        this.isArray = false;
-
-        // Visita a declaração de tipo para definir a variável lastDeclType.
-    	visit(ctx.type_spec());
-
-        // Visita a declaração dos ids para colocar a variável na tabela de variáveis.
-        visit(ctx.proc_func_id_list());
-
-    	return NO_TYPE;
-    }
-
-    @Override
     public Type visitFnc_sign_decl(Fnc_sign_declContext ctx) {
         this.lastEnteredScope = Scope.FUNCTION;
 
@@ -110,15 +97,50 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
             EntryFunc newFunc = new EntryFunc(funcName, startLine);
             this.lastFuncVisited = funcName;
             functionTable.addFunc(newFunc);
-            System.out.println(newFunc);
-            System.out.println(lastEnteredScope);
 
             // Visita parametros para adicionar a lista de simbolos da funcao
             visit(ctx.fnc_sign_params_sect());
             visit(ctx.func_vars_sect());
         }
 
+        this.lastEnteredScope = Scope.GLOBAL;
         return NO_TYPE;
+    }
+
+    @Override
+    public Type visitProcedures_decl(Procedures_declContext ctx) {
+        this.lastEnteredScope = Scope.FUNCTION;
+
+        String procName = ctx.ID().getText();
+        int startLine = ctx.getStart().getLine();
+
+        if  (functionTable.containsKey(procName)) {
+            System.out.println("The procedure " + procName + " has already been declared!");
+        } else {
+            EntryFunc newProc = new EntryFunc(procName, startLine);
+            this.lastFuncVisited = procName;
+            functionTable.addFunc(newProc);
+
+            // Visita parametros para adicionar a lista de simbolos da funcao
+            visit(ctx.procedure_params_sect());
+        }
+
+        this.lastEnteredScope = Scope.GLOBAL;
+        return NO_TYPE;
+    }
+
+    @Override
+    public Type visitFnc_sign_param_decl(Fnc_sign_param_declContext ctx) {
+        
+        this.isArray = false;
+
+        // Visita a declaração de tipo para definir a variável lastDeclType.
+    	visit(ctx.type_spec());
+
+        // Visita a declaração dos ids para colocar a variável na tabela de variáveis.
+        visit(ctx.proc_func_id_list());
+
+    	return NO_TYPE;
     }
 
     @Override
