@@ -25,6 +25,12 @@ public class FuncTable extends HashMap<String, EntryFunc> {
         return func.containsKey(varName);
     }
 
+    public EntryInput getFuncVar(String funcName, String varName) {
+        EntryFunc func = get(funcName);
+
+        return func.getVar(varName);
+    }
+
     public boolean addVarToFunc(String funcName, EntryInput entry) {
         EntryFunc func = get(funcName);
         return func.addVar(entry);
