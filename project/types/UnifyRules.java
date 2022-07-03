@@ -2,9 +2,6 @@ package types;
 
 import types.Type;
 
-// SOMA DE CHAR COM INT FALHOU
-// SOMA COM INT COM BOOLEAN FALHOU
-// SOMA DE REAL COM INT PARA VARIAVEL INT FALHOU
 
 public class UnifyRules {
     // tabela de unificação de tipos primitivos para o operador '+', '-', '*', '/'
