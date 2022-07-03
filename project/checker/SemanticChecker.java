@@ -27,7 +27,6 @@ import parser.PASParser.ExprUnaryMinusContext;
 import parser.PASParser.ExprArithmeticContext;
 import parser.PASParser.ExprDivContext;
 import parser.PASParser.ExprLparRparContext;
-import parser.PASParser.ExprColonContext;
 import parser.PASParser.ExprFncContext;
 import parser.PASParser.ExprIntValContext;
 import parser.PASParser.ExprRealValContext;
@@ -261,7 +260,6 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
 
     @Override
     public Type visitAssign_stmt(Assign_stmtContext ctx) {
-        System.out.println("\nvisitin expr " + ctx.getText());
         visit(ctx.expr());
         return NO_TYPE;
     }
@@ -271,23 +269,20 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
 		Type l = visit(ctx.left);
 		Type r = visit(ctx.right);
 
-        // System.out.println("inside expr");
-        System.out.println(ctx.getText());
-
-		Type unif = NO_TYPE;
-        System.out.println("l: " + l + " r: " + r);
+        if (l == NO_TYPE || r == NO_TYPE) {
+            return NO_TYPE;
+        }
 
         if (l == STRING_TYPE || r == STRING_TYPE) {
             typeError(ctx.op.getLine(), ctx.op.getText(), l, r);
             passed = false;
             return NO_TYPE;
-
         }
 
+		Type unif = NO_TYPE;
         int op = ctx.op.getType();
 		if (op == PASParser.PLUS || op == PASParser.MINUS || op == PASParser.TIMES || op == PASParser.OVER) {
 			unif = l.unifyArith(r);
-            System.out.println("Unified type: " + unif);
 		} 
 
 		if (unif == NO_TYPE) {
@@ -299,42 +294,49 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
 		return unif;
 	}
 
-    private void typeError(int lineNo, String op, Type t1, Type t2) {
-    	System.out.printf("SEMANTIC ERROR (%d): incompatible types for operator '%s', LHS is '%s' and RHS is '%s'.\n",
-    			lineNo, op, t1.toString(), t2.toString());
-    	passed = false;
-    }
-
+    @Override
     public Type visitExprOpLogic(ExprOpLogicContext ctx) {
 
-        Type l = visit(ctx.expr(0));
-        Type r = visit(ctx.expr(1));
+		Type l = visit(ctx.left);
+		Type r = visit(ctx.right);
 
         if (l == NO_TYPE || r == NO_TYPE) {
             return NO_TYPE;
         }
 
-        Type unif = l.unifyComp(r);
+
+        Type unif = NO_TYPE;
+        int op = ctx.op.getType();
+
+        if (op == PASParser.EQ || op == PASParser.NEQ || op == PASParser.LT || op == PASParser.LTE || op == PASParser.BT || op == PASParser.BTE || op == PASParser.AND || op == PASParser.OR) {
+            unif = l.unifyComp(r);
+        }
 
         if (unif == NO_TYPE) {
             typeError(ctx.op.getLine(), ctx.op.getText(), l, r);
+            passed = false;
+            return NO_TYPE;
         }
+
         return unif;
     }
 
+    // TODO
     public Type visitExprUnaryMinus(ExprUnaryMinusContext ctx) {
         return NO_TYPE;
     }
 
+    // TODO
     public Type visitExprDiv(ExprDivContext ctx) {
         return NO_TYPE;
     }
+
+    // TODO
     public Type visitExprLparRpar(ExprLparRparContext ctx) {
         return NO_TYPE;
     }
-    public Type visitExprColon(ExprColonContext ctx) {
-        return NO_TYPE;
-    }
+
+    // TODO
     public Type visitExprFnc(ExprFncContext ctx) {
         return NO_TYPE;
     }
@@ -396,6 +398,12 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
 
 		return STRING_TYPE;
 	}
+
+    private void typeError(int lineNo, String op, Type t1, Type t2) {
+    	System.out.printf("SEMANTIC ERROR (%d): incompatible types for operator '%s', LHS is '%s' and RHS is '%s'.\n",
+    			lineNo, op, t1.toString(), t2.toString());
+    	passed = false;
+    }
 
     public Type showTables() {
         System.out.println(variableTable);
