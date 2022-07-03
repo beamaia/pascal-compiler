@@ -37,6 +37,10 @@ public class VarTable extends HashMap<String, EntryInput> {
         return get(s).isArray;
     }
 
+    public EntryInput getEntry(String s) {
+        return get(s);
+    }
+
 	
 	public String toString() {
 		StringBuilder sb = new StringBuilder();

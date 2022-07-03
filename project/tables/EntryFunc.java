@@ -28,6 +28,10 @@ public class EntryFunc {
 
     }
 
+    public EntryInput getVar(String name) {
+        return variableTable.getEntry(name);
+    }
+
     @Override
     public String toString(){
         StringBuilder sb = new StringBuilder();
