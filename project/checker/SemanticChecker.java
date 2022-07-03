@@ -24,8 +24,9 @@ import parser.PASParser.Array_endContext;
 
 import parser.PASParser.ExprOpLogicContext;
 import parser.PASParser.ExprUnaryMinusContext;
+import parser.PASParser.ExprUnaryNotContext;
 import parser.PASParser.ExprArithmeticContext;
-import parser.PASParser.ExprDivContext;
+import parser.PASParser.ExprDivModContext;
 import parser.PASParser.ExprLparRparContext;
 import parser.PASParser.ExprFncContext;
 import parser.PASParser.ExprIntValContext;
@@ -94,12 +95,12 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
         int startLine = ctx.getStart().getLine();
 
         if (variableTable.containsKey(funcName)) {
-            System.out.println("There is already a variable with " + funcName + " name!");
+            System.out.println("Erro: there is already a variable with " + funcName + " name!");
             passed = false;
             return NO_TYPE;
         }
         else if  (functionTable.containsKey(funcName)) {
-            System.out.println("The function " + funcName + " has already been declared!");
+            System.out.println("Erro: the function " + funcName + " has already been declared!");
             passed = false;
             return NO_TYPE;
         } else {
@@ -124,12 +125,12 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
         int startLine = ctx.getStart().getLine();
 
         if (variableTable.containsKey(procName)) {
-            System.out.println("There is already a variable with " + procName + " name!");
+            System.out.println("Erro: there is already a variable with " + procName + " name!");
             passed = false;
             return NO_TYPE;
         }
         else if  (functionTable.containsKey(procName)) {
-            System.out.println("The procedure " + procName + " has already been declared!");
+            System.out.println("Erro: the procedure " + procName + " has already been declared!");
             passed = false;
             return NO_TYPE;
         } else {
@@ -257,7 +258,7 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
         return NO_TYPE;
     }
 
-
+    // TODO: Visit array expr (second context)
     @Override
     public Type visitAssign_stmt(Assign_stmtContext ctx) {
         visit(ctx.expr());
@@ -304,6 +305,11 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
             return NO_TYPE;
         }
 
+        if (l == STRING_TYPE || r == STRING_TYPE) {
+            typeError(ctx.op.getLine(), ctx.op.getText(), l, r);
+            passed = false;
+            return NO_TYPE;
+        }
 
         Type unif = NO_TYPE;
         int op = ctx.op.getType();
@@ -321,25 +327,68 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
         return unif;
     }
 
-    // TODO
+    @Override
     public Type visitExprUnaryMinus(ExprUnaryMinusContext ctx) {
-        return NO_TYPE;
+
+		Type expr = visit(ctx.expr());
+        if (expr == INT_TYPE || expr == REAL_TYPE) {
+            return expr;
+        } else {
+            System.out.println("Error: unary minus can only be applied to int or real");
+            passed = false;
+            return NO_TYPE;
+        }
     }
 
-    // TODO
-    public Type visitExprDiv(ExprDivContext ctx) {
-        return NO_TYPE;
+    @Override
+    public Type visitExprUnaryNot(ExprUnaryNotContext ctx) {
+        Type expr = visit(ctx.expr());
+        
+        if (expr == BOOL_TYPE) {
+            return expr;
+        } else {
+            System.out.println("Error: unary not can only be applied to bool");
+            passed = false;
+            return NO_TYPE;
+        }
     }
 
-    // TODO
-    public Type visitExprLparRpar(ExprLparRparContext ctx) {
-        return NO_TYPE;
+    @Override
+    public Type visitExprDivMod(ExprDivModContext ctx) {
+        Type l = visit(ctx.left);
+		Type r = visit(ctx.right);
+
+        if (l == NO_TYPE || r == NO_TYPE) {
+            return NO_TYPE;
+        }
+
+        if (l == STRING_TYPE || r == STRING_TYPE) {
+            typeError(ctx.op.getLine(), ctx.op.getText(), l, r);
+            passed = false;
+            return NO_TYPE;
+        }
+
+        Type unif = NO_TYPE;
+        int op = ctx.op.getType();
+
+        if (op == PASParser.DIV || op == PASParser.MOD) {
+            unif = l.unifyIntDiv(r);
+        }
+
+        if (unif == NO_TYPE) {
+            typeError(ctx.op.getLine(), ctx.op.getText(), l, r);
+            passed = false;
+            return NO_TYPE;
+        }
+
+        return unif;
     }
 
-    // TODO
-    public Type visitExprFnc(ExprFncContext ctx) {
-        return NO_TYPE;
-    }
+    // @Override
+    // public Type visitExprLparRpar(ExprLparRparContext ctx) {
+    //     return NO_TYPE;
+    // }
+
 
     @Override
     public Type visitExprIntVal(ExprIntValContext ctx) {
@@ -357,27 +406,56 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
     }
 
     @Override
+    public Type visitExprBooleanVal(ExprBooleanValContext ctx) {
+        return BOOL_TYPE;
+    }
+
+    @Override
     public Type visitExprId(ExprIdContext ctx) {
         String name = ctx.getText();
 
         if (variableTable.containsKey(name)) {
-            System.out.println();
             return variableTable.getType(name);
-        } else {
+        }   
+        else if (lastEnteredScope == Scope.FUNCTION && functionTable.funcContainsVar(lastFuncVisited, name)) {
+            return functionTable.getFuncVar(lastFuncVisited, name).type;
+        } 
+        else {
             System.out.println("Error: variable " + name + " not declared");
             passed = false;
             return NO_TYPE;
         }
     }
 
+    @Override
     public Type visitExprArrayAccess(ExprArrayAccessContext ctx) {
-        System.out.println("visitin array expr" + ctx.getText());
-        return NO_TYPE;
+        String name = ctx.ID().getText();
+        Type index_type = visit(ctx.array_index());
+
+        if (index_type != INT_TYPE) {
+            System.out.println("Error: array index must be an int");
+            passed = false;
+            return NO_TYPE;
+        }
+
+        else if (variableTable.containsKey(name)) {
+            return variableTable.getType(name);
+        }   
+        else if (lastEnteredScope == Scope.FUNCTION && functionTable.funcContainsVar(lastFuncVisited, name)) {
+            return functionTable.getFuncVar(lastFuncVisited, name).type;
+        } 
+
+        else {
+            System.out.println("Error: variable " + name + " not declared");
+            passed = false;
+            return NO_TYPE;
+        }
     }
 
+    // TODO
     @Override
-    public Type visitExprBooleanVal(ExprBooleanValContext ctx) {
-        return BOOL_TYPE;
+    public Type visitExprFnc(ExprFncContext ctx) {
+        return NO_TYPE;
     }
 
     @Override
