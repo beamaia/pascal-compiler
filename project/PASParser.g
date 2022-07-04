@@ -156,10 +156,10 @@ assign_stmt: ID ASSIGN expr SEMI #assignStmtSimple
     | ID LSB array_index RSB ASSIGN expr SEMI #assignStmtArray;
 
 // Chamada de funções
-fnc: ID LPAR expr RPAR 
-    | ID 
-    | ID LPAR RPAR
-    | ID LPAR expr_list RPAR; 
+fnc: ID LPAR expr RPAR // func(expr)
+    | ID // func
+    | ID LPAR RPAR // func()
+    | ID LPAR expr_list RPAR; // func(expr, expr, expr...) 
 fnc_stmt: fnc SEMI | ID LPAR fnc RPAR SEMI;
 
 // Acesso ao array
