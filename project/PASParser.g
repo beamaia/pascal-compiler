@@ -152,8 +152,8 @@ for_stmt: FOR ID ASSIGN expr TO expr DO stmt_sect SEMI
     | FOR ID ASSIGN expr TO expr DO stmt ;
 
 // Atribuição
-assign_stmt: ID ASSIGN expr SEMI
-    | ID LSB array_index RSB ASSIGN expr SEMI;
+assign_stmt: ID ASSIGN expr SEMI #assignStmtSimple
+    | ID LSB array_index RSB ASSIGN expr SEMI #assignStmtArray;
 
 // Chamada de funções
 fnc: ID LPAR expr RPAR 
