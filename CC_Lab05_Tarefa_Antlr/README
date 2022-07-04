@@ -1,0 +1,32 @@
+* Passos para executar a solução do Lab05 no ANTLR:
+
+1) Edite as variáveis do Makefile como antes.
+
+2) Para rodar o ANTLR e compilar os arquivos gerados:
+
+   $ make
+
+3) Para executar o parser com um único arquivo de entrada:
+
+   $ make run FILE=arquivo_de_teste
+
+4) Se quiser rodar todos os casos de teste de uma vez, basta fazer:
+
+   $ ./runall.sh
+
+OBSERVAÇÕES:
+
+Continuando a expansão do visitor da Parse Tree, neste laboratório vamos fazer
+a construção da AST. Veja os detalhes desta estrutura no pacote 'ast',
+juntamente com os comentários explicativos.
+
+Vamos fazer a construção da AST juntamente com a análise semântica. Por isso
+que a classe SemanticChecker.java foi modificada mais uma vez, agora para
+incluir a criação dos nós da AST em conjunto com a análise de tipos e uso das
+variáveis. A ideia então é que se a análise semântica passar, a AST está pronta
+para ser passada para o back-end do compilador, terminando o papel do front-end.
+
+Neste ponto, a ideia geral de como se trabalhar com o ANTLR já deve estar bem
+clara para você. De qualquer forma, o código deste laboratório foi
+extensivamente comentado para tentar esclarecer bem o funcionamento. Qualquer
+dúvida pergunte ao professor.

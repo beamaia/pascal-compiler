@@ -132,13 +132,13 @@ stmt: if_stmt
     | for_stmt;
 
 // If then else
-if_stmt: IF expr THEN stmt_sect SEMI
-    | IF expr THEN stmt_sect SEMI else_stmt
-    | IF expr THEN stmt
-    | IF expr THEN stmt else_stmt;
-else_stmt: ELSE stmt_sect SEMI
-    | ELSE stmt
-    | ELSE if_stmt;
+if_stmt: IF expr THEN stmt_sect SEMI        #ifThenStmt
+    | IF expr THEN stmt_sect SEMI else_stmt #ifThenElseStmt
+    | IF expr THEN stmt                     #inlineIfThenStmt
+    | IF expr THEN stmt else_stmt           #inlineIfThenElseStmt; 
+else_stmt: ELSE stmt_sect SEMI #elseStmt
+    | ELSE stmt                #inlineElseStmt
+    | ELSE if_stmt             #elseIfStmt;
 
 // Repeat -> TROCAR PARA WHILE
 repeat_stmt: REPEAT stmt_list UNTIL expr SEMI;
