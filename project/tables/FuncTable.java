@@ -36,6 +36,10 @@ public class FuncTable extends HashMap<String, EntryFunc> {
         return func.addVar(entry);
     }
 
+    public EntryFunc getFunc(String funcName) {
+        return get(funcName);
+    }
+
     public String toString() {
 		StringBuilder sb = new StringBuilder();
 		Formatter f = new Formatter(sb);
