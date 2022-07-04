@@ -30,5 +30,4 @@ Consideramos a seguintes possiveis operacoes aritmeticas:
 Retiramos o switch case
 Retiramos o type
 Simplificamos para aceitar apenas arrays (n pode matrizes de dimensoes maiores que 1)
-Não consideramos arrays como tipo de retorno de função, nem assign de arrays, por exemplo:
-
+Não consideramos arrays como tipo de retorno de função, nem assign de arrays, por exemplo, A e B são arrays, B := A (teria que verificar se são arrays e se tem o mesmo tamanho).
