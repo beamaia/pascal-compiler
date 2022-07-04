@@ -1,6 +1,7 @@
 program exProcedure;
 var
    a, b, c,  min: integer;
+   d: real;
 
 function min(num1, num2: integer; f1,f2 : char ): integer;
 
@@ -49,6 +50,7 @@ begin
    writeln(' Enter three numbers: ');
    readln( a, b, c);
    findMin(a, b, c, min); (* Procedure call *)
-   
+   a:= min + max(a, b, 'a', 'b'); (* Function call *)
+   c:= min + max(a, b, 'a', 'b'); (* Function call *)
    writeln(' Minimum: ', min);
 end.
