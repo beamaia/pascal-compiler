@@ -30,3 +30,5 @@ Consideramos a seguintes possiveis operacoes aritmeticas:
 Retiramos o switch case
 Retiramos o type
 Simplificamos para aceitar apenas arrays (n pode matrizes de dimensoes maiores que 1)
+Não consideramos arrays como tipo de retorno de função, nem assign de arrays, por exemplo:
+
