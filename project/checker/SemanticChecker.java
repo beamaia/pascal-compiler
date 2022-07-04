@@ -45,6 +45,8 @@ import parser.PASParser.Proc_func_id_nodeContext;
 import parser.PASParser.Procedures_declContext;
 
 import parser.PASParser.Assign_stmtContext;
+import parser.PASParser.AssignStmtSimpleContext;
+import parser.PASParser.AssignStmtArrayContext;
 
 import tables.EntryInput;
 import tables.EntryStr;
@@ -93,18 +95,18 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
 
         String funcName = ctx.ID().getText();
         int startLine = ctx.getStart().getLine();
+        Type returnType = visit(ctx.type_spec());
 
         if (variableTable.containsKey(funcName)) {
             System.out.println("Erro: there is already a variable with " + funcName + " name!");
             passed = false;
             return NO_TYPE;
-        }
-        else if  (functionTable.containsKey(funcName)) {
+        } else if  (functionTable.containsKey(funcName)) {
             System.out.println("Erro: the function " + funcName + " has already been declared!");
             passed = false;
             return NO_TYPE;
         } else {
-            EntryFunc newFunc = new EntryFunc(funcName, startLine);
+            EntryFunc newFunc = new EntryFunc(funcName, startLine, returnType);
             this.lastFuncVisited = funcName;
             functionTable.addFunc(newFunc);
 
@@ -128,13 +130,12 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
             System.out.println("Erro: there is already a variable with " + procName + " name!");
             passed = false;
             return NO_TYPE;
-        }
-        else if  (functionTable.containsKey(procName)) {
+        } else if  (functionTable.containsKey(procName)) {
             System.out.println("Erro: the procedure " + procName + " has already been declared!");
             passed = false;
             return NO_TYPE;
         } else {
-            EntryFunc newProc = new EntryFunc(procName, startLine);
+            EntryFunc newProc = new EntryFunc(procName, startLine, NO_TYPE);
             this.lastFuncVisited = procName;
             functionTable.addFunc(newProc);
 
@@ -258,10 +259,58 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
         return NO_TYPE;
     }
 
-    // TODO: Visit array expr (second context)
     @Override
-    public Type visitAssign_stmt(Assign_stmtContext ctx) {
-        visit(ctx.expr());
+    public Type visitAssignStmtSimple(AssignStmtSimpleContext ctx) {
+        String varName = ctx.ID().getText();
+        Type varType, exprType;
+
+        if(variableTable.containsKey(varName)){
+            varType = variableTable.getType(varName);
+        } else if (lastEnteredScope == Scope.FUNCTION && functionTable.funcContainsVar(lastFuncVisited, varName)) {
+            varType = functionTable.getFuncVar(lastFuncVisited, varName).type;
+        }else {
+            System.out.println("Error: variable " + varName + " not declared");
+            passed = false;
+            return NO_TYPE;
+        }
+        
+        exprType = visit(ctx.expr());
+        
+        if(exprType != varType){
+            System.out.println("Error: expression type doesn't match variable type. Variable is of type " + varType + "while expression is "+exprType+".\n");
+            passed = false;
+        }
+        
+        return NO_TYPE;
+    }
+
+    @Override
+    public Type visitAssignStmtArray(AssignStmtArrayContext ctx) {
+        String varName = ctx.ID().getText();
+        Type indexType = visit(ctx.array_index());
+
+        Type varType = NO_TYPE;
+
+        if (indexType != INT_TYPE) {
+            System.out.println("Error: array index must be an int");
+            passed = false;
+            return NO_TYPE;
+        } else if (variableTable.containsKey(varName)) {
+            varType = variableTable.getType(varName);
+        } else if (lastEnteredScope == Scope.FUNCTION && functionTable.funcContainsVar(lastFuncVisited, varName)) {
+            varType = functionTable.getFuncVar(lastFuncVisited, varName).type;
+        } else {
+            System.out.println("Error: variable " + varName + " not declared");
+            passed = false;
+            return NO_TYPE;
+        }
+               
+        Type exprType = visit(ctx.expr());
+        if (exprType != varType) {
+            System.out.println("Error: expression type doesn't match variable type. Variable is of type " + varType + "while expression is "+exprType+".\n");
+            passed = false;
+        }        
+        
         return NO_TYPE;
     }
 
@@ -384,12 +433,6 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
         return unif;
     }
 
-    // @Override
-    // public Type visitExprLparRpar(ExprLparRparContext ctx) {
-    //     return NO_TYPE;
-    // }
-
-
     @Override
     public Type visitExprIntVal(ExprIntValContext ctx) {
         return INT_TYPE;
@@ -416,11 +459,9 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
 
         if (variableTable.containsKey(name)) {
             return variableTable.getType(name);
-        }   
-        else if (lastEnteredScope == Scope.FUNCTION && functionTable.funcContainsVar(lastFuncVisited, name)) {
+        } else if (lastEnteredScope == Scope.FUNCTION && functionTable.funcContainsVar(lastFuncVisited, name)) {
             return functionTable.getFuncVar(lastFuncVisited, name).type;
-        } 
-        else {
+        } else {
             System.out.println("Error: variable " + name + " not declared");
             passed = false;
             return NO_TYPE;
@@ -436,16 +477,11 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
             System.out.println("Error: array index must be an int");
             passed = false;
             return NO_TYPE;
-        }
-
-        else if (variableTable.containsKey(name)) {
+        } else if (variableTable.containsKey(name)) {
             return variableTable.getType(name);
-        }   
-        else if (lastEnteredScope == Scope.FUNCTION && functionTable.funcContainsVar(lastFuncVisited, name)) {
+        } else if (lastEnteredScope == Scope.FUNCTION && functionTable.funcContainsVar(lastFuncVisited, name)) {
             return functionTable.getFuncVar(lastFuncVisited, name).type;
-        } 
-
-        else {
+        } else {
             System.out.println("Error: variable " + name + " not declared");
             passed = false;
             return NO_TYPE;
