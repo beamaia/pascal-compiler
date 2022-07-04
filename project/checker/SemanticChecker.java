@@ -491,7 +491,16 @@ public class SemanticChecker extends PASParserBaseVisitor<Type> {
     // TODO
     @Override
     public Type visitExprFnc(ExprFncContext ctx) {
-        return NO_TYPE;
+        // Pega o nome da função
+        String funID = ctx.getChild(0).getChild(0).getText();
+
+        if (functionTable.containsKey(funID)) {
+            return functionTable.getFunc(funID).type;
+        } else {
+            System.out.println("Error: function " + funID + " not declared");
+            passed = false;
+            return NO_TYPE;
+        }
     }
 
     @Override
