@@ -12,6 +12,7 @@ import parser.PASParser;
 import parser.PASParserBaseVisitor;
 
 import parser.PASParser.ProgramContext;
+import parser.PASParser.Vars_sectContext;
 import parser.PASParser.Var_decl_listContext;
 
 import parser.PASParser.IntTypeContext;
@@ -66,6 +67,8 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
     Scope lastEnteredScope = Scope.GLOBAL;
 
     AST root;
+    AST varsRoot;
+    AST funcRoot;
 
     private StrTable stringTable = new StrTable();
     private VarTable variableTable = new VarTable();
@@ -91,7 +94,7 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
         AST stmtSect;
 
         // Cada tabela de simbolos eh criada como uma sub-arvore da raiz da arvore AST
-        varsSect = AST.newSubtree(VAR_LIST_NODE, NO_TYPE); 
+ 
         funcSect = AST.newSubtree(FUNC_LIST_NODE, NO_TYPE); 
         stmtSect = AST.newSubtree(STMT_LIST_NODE, NO_TYPE);
 
@@ -106,55 +109,67 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
        // }
 
         // Cria raiz da arvore AST com as tabelas de simbolo
-        System.out.println(visit(ctx.vars_sect()).printNodeDot());
+        visit(ctx.vars_sect());
+		root.addChild(varsRoot);
 
         this.root = AST.newSubtree(PROGRAM_NODE, NO_TYPE, varsSect, funcSect);
         return this.root;
     }
+	
+    @Override
+    public AST visitVars_sect(Var_sectContext ctx) {
+		varsRoot = AST.newSubtree(VAR_LIST_NODE, NO_TYPE); 
+	 
+		if (ctx.getChildCount()) {
+	    	visit(ctx.opt_var_decl())
+		}
+		
+		return varsRoot
+    }	    
 
-    @Override 
-    public AST visitVar_decl_list(Var_decl_listContext ctx) {
-        //System.out.println(ctx.var_decl_list());
-        //System.out.println(ctx.var_decl_list().getText());
-        //System.out.println(ctx.getChild(1));
-        System.out.println(ctx.getChildCount());
-        System.out.println(ctx.getText());
-        if ( ctx.getChildCount() == 1 ) {
-            AST varDecl = visit(ctx.var_decl());
-            System.out.println(varDecl.printNodeDot());
-        } else {
-            AST varDecl = visit(ctx.var_decl());
-            System.out.println(varDecl.printNodeDot());
-            AST varDeclList = visit(ctx.var_decl_list());
-        }
+//     @Override 
+//     public AST visitVar_decl_list(Var_decl_listContext ctx) {
+//         //System.out.println(ctx.var_decl_list());
+//         //System.out.println(ctx.var_decl_list().getText());
+//         //System.out.println(ctx.getChild(1));
+//         System.out.println(ctx.getChildCount());
+//         System.out.println(ctx.getText());
+//         if ( ctx.getChildCount() == 1 ) {
+//             AST varDecl = visit(ctx.var_decl());
+//             System.out.println(varDecl.printNodeDot());
+//         } else {
+//             AST varDecl = visit(ctx.var_decl());
+//             System.out.println(varDecl.printNodeDot());
+//             AST varDeclList = visit(ctx.var_decl_list());
+//         }
 
-        // // Verifica se existe declaração de variáveis
-        // if (ctx.block().variableDeclarationPart().size() > 0) {
-        //     varsSect = visit(ctx.block().variableDeclarationPart(0));
-        // }
+//         // // Verifica se existe declaração de variáveis
+//         // if (ctx.block().variableDeclarationPart().size() > 0) {
+//         //     varsSect = visit(ctx.block().variableDeclarationPart(0));
+//         // }
 
-        /**
+//         /**
         
         
-         */
-        return AST.newSubtree(VAR_LIST_NODE, NO_TYPE);
+//          */
+//         return AST.newSubtree(VAR_LIST_NODE, NO_TYPE);
 
-        //for (int i = 0; i < ctx.getChildCount(); i++) {
-        //   System.out.println("i: " + i);
-        //   System.out.println(ctx.getChild(i).getText());
-        //   System.out.println("tamanho dos filhos: " + ctx.getChild(i).getChildCount());
-        //    for (int j = 0; j < ctx.getChild(i).getChildCount(); j++) {
-        //        System.out.println("j: " + j);
-        //        System.out.println("linha: " + ctx.getChild(i).getChild(j).getText());
-        //    }
-           // System.out.println(visit(ctx.var_decl_list(i)).getText());
-        //}
+//         //for (int i = 0; i < ctx.getChildCount(); i++) {
+//         //   System.out.println("i: " + i);
+//         //   System.out.println(ctx.getChild(i).getText());
+//         //   System.out.println("tamanho dos filhos: " + ctx.getChild(i).getChildCount());
+//         //    for (int j = 0; j < ctx.getChild(i).getChildCount(); j++) {
+//         //        System.out.println("j: " + j);
+//         //        System.out.println("linha: " + ctx.getChild(i).getChild(j).getText());
+//         //    }
+//            // System.out.println(visit(ctx.var_decl_list(i)).getText());
+//         //}
         
-        // for (var teste: ctx.var_decl()) {
-        //     System.out.println(teste.getText());
-        // }
+//         // for (var teste: ctx.var_decl()) {
+//         //     System.out.println(teste.getText());
+//         // }
 
-    }
+//     }
 
 
 
@@ -168,7 +183,8 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
 
         // Visita a declaração dos ids para colocar a variável na tabela de variáveis.
         visit(ctx.id_list());
-
+		
+		varsRoot = AST.newSubtree(VAR_DECL_NODE, NO_TYPE);
         return AST.newSubtree(VAR_DECL_NODE, NO_TYPE);
     	//return NO_TYPE;
     }
@@ -319,6 +335,9 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
             }
             variableTable.addVar(entry);
             AST node = new AST(VAR_DECL_NODE, id, lastDeclType);
+			varsRoot.addChild(node);
+			
+			return node;
         }
     }
 
