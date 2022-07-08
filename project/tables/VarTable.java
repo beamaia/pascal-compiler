@@ -4,54 +4,65 @@ package tables;
 import tables.EntryInput;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 
 import types.Type;
 
 import java.lang.StringBuilder;
 import java.util.Formatter;
 
-public class VarTable extends HashMap<String, EntryInput> {
+public class VarTable{
     
-	public boolean addVar(EntryInput entry) {
-        String s = entry.name;
-		if ( containsKey(s) ) {
-            return false;
+    public List<EntryInput> table = new ArrayList<EntryInput>();
+
+    public int addVar(EntryInput e) {
+        int idxAdded = table.size();
+        table.add(e);
+        return idxAdded;
+    }
+
+    public String getName(int i) {
+        return table.get(i).name;
+    }
+
+    public int getLine(int i) {
+        return table.get(i).line;
+    }
+
+    public Type getType(int i) {
+        return table.get(i).type;
+    }
+
+    public EntryInput getEntry(String name) {
+        for(EntryInput entry : table) {
+            if(entry.name.equals(name)) {
+                return entry;
+            }
         }
-        put(s, entry);
-        return true;
-	}
-
-    public String getName(String s) {
-        return get(s).name;
+        return null;
     }
 
-    public int getLine(String s) {
-        return get(s).line;
-    }
-
-    public Type getType(String s) {
-        return get(s).type;
-    }
-
-    public boolean getIsArray(String s) {
-        return get(s).isArray;
-    }
-
-    public EntryInput getEntry(String s) {
-        return get(s);
-    }
-
-	
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		Formatter f = new Formatter(sb);
-		f.format("Variables table:\n");
-		// iterating hashmap<String, EntryInput>
-        for (String key : keySet()) {
-            f.format("%s", get(key).toString());
+    public boolean contains(String s) {
+        for (int i = 0; i < table.size(); i++) {
+            if (table.get(i).name.equals(s)) {
+                return true;
+            }
         }
-		f.close();
-		return sb.toString();
-	}
+        return false;
+    }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        Formatter f = new Formatter(sb);
+        f.format("Variables table:\n");
+        for (int i = 0; i < table.size(); i++) {
+            f.format("Entry %d -- name: %s, line: %d, type: %s\n", i,
+                     getName(i), getLine(i), getType(i).toString());
+        }
+        f.close();
+        return sb.toString();
+    }
+
 
 }

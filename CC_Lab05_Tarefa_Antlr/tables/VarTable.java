@@ -13,7 +13,7 @@ public final class VarTable {
 	// tentei deixar o mais parecido possível com a original em C.
 	private List<Entry> table = new ArrayList<Entry>(); 
 
-	public int lookupVar(String s) {
+	public int contains(String s) {
 		for (int i = 0; i < table.size(); i++) {
 			if (table.get(i).name.equals(s)) {
 				return i;

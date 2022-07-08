@@ -13,37 +13,32 @@ public class AST {
     public final NodeKind kind;
     public final int intData;
     public final float floatData;
-    public final String stringData; // TODO: stringData para nos tipo var e func?
     public final Type type;
     public final List<AST> children;
 
-
-    private AST(NodeKind kind, int intData, float floatData, String stringData, Type type) {
+    private AST(NodeKind kind, int intData, float floatData, Type type) {
         this.kind = kind;
         this.intData = intData;
         this.floatData = floatData;
-        this.stringData = stringData;
         this.type = type;
         this.children = new ArrayList<AST>();
     }
 
     // Quando eh inicializado um no de valor inteiro ou bool (ele usa 1 pra true e 0 pra false)
     public AST(NodeKind kind, int intData, Type type) {
-        this(kind, intData, 0.0f, "", type);
+        this(kind, intData, 0.0f, type);
     }
     
     // Quando eh inicializado um no de valor real
     public AST(NodeKind kind, float floatData, Type type) {
-        this(kind, 0, floatData, "", type);
-    }
-
-    // Quando eh inicializado um no funcao ou variavel
-    public AST(NodeKind kind, String stringData, Type type) {
-        this(kind, 0, 0.0f, stringData, type);
+        this(kind, 0, floatData, type);
     }
 
     public void addChild(AST child) {
-        this.children.add(child);
+        // check if intData child is -1 (it means that it is a list)
+        if (child.intData != -1) {
+            this.children.add(child);
+        }
     }
 
     public AST getChild(int idx) {
@@ -63,7 +58,7 @@ public class AST {
     }
 
     private static int nr;
-    private static VarTable varTable;
+    public static VarTable varTable;
     private static FuncTable functionTable;
     private static StrTable stringTable;
 
@@ -75,7 +70,7 @@ public class AST {
 	    	System.err.printf("(%s) ", this.type.toString());
 	    }
 	    if (this.kind == NodeKind.VAR_DECL_NODE || this.kind == NodeKind.VAR_USE_NODE) {
-	    	System.err.printf("%s@", varTable.getName(this.stringData));
+	    	System.err.printf("%s@", varTable.getName(this.intData)); 
 	    } else {
 	    	System.err.printf("%s", this.kind.toString());
 	    }
@@ -90,10 +85,16 @@ public class AST {
 	    }
 	    System.err.printf("\"];\n");
 
-	    for (int i = 0; i < this.children.size(); i++) {
-	        int childNr = this.children.get(i).printNodeDot();
-	        System.err.printf("node%d -> node%d;\n", myNr, childNr);
-	    }
+	    // for (int i = 0; i < this.children.size(); i++) {
+	    //     int childNr = this.children.get(i).printNodeDot();
+	    //     System.err.printf("node%d -> node%d;\n", myNr, childNr);
+	    // }
+
+        for (AST child : this.children) {
+            // todo kind tem to string né?
+            int childNr = child.printNodeDot();
+            System.err.printf("node%d -> node%d;\n", myNr, childNr);
+        }
 	    return myNr;
 	}
 

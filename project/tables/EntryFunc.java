@@ -23,11 +23,12 @@ public class EntryFunc {
     }
 
     public boolean addVar(EntryInput entry) {
-        return this.variableTable.addVar(entry);
+        int idx = this.variableTable.addVar(entry);
+        return idx != -1;
     }
 
     public boolean containsKey(String key) {
-        return variableTable.containsKey(key);
+        return variableTable.contains(key);
 
     }
 

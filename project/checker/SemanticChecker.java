@@ -42,6 +42,7 @@ import parser.PASParser.ExprBooleanValContext;
 
 import parser.PASParser.Var_declContext;
 
+import parser.PASParser.Fnc_and_procedures_sectContext;
 import parser.PASParser.Fnc_sign_declContext;
 import parser.PASParser.Fnc_sign_param_declContext;
 import parser.PASParser.Proc_func_id_nodeContext;
@@ -60,6 +61,7 @@ import tables.VarTable;
 import tables.FuncTable;
 
 import checker.Scope;
+
 
 public class SemanticChecker extends PASParserBaseVisitor<AST> {
     
@@ -82,96 +84,65 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
     private int end;
 
     private String lastFuncVisited;
-    
+
+
     /**
      * Visita programa e cria no da arvore AST
      * @param ctx ProgramContext
      */
     @Override
     public AST visitProgram(ProgramContext ctx) {
-        AST varsSect;
-        AST funcSect; 
-        AST stmtSect;
-
+        this.root = AST.newSubtree(PROGRAM_NODE, NO_TYPE);
         // Cada tabela de simbolos eh criada como uma sub-arvore da raiz da arvore AST
  
-        funcSect = AST.newSubtree(FUNC_LIST_NODE, NO_TYPE); 
-        stmtSect = AST.newSubtree(STMT_LIST_NODE, NO_TYPE);
+        // funcSect = AST.newSubtree(FUNC_LIST_NODE, NO_TYPE); 
+        // stmtSect = AST.newSubtree(STMT_LIST_NODE, NO_TYPE);
 
         // Visita cada secao da arvore e adiciona a sub-arvore criada ao no da raiz da arvore AST
-      //  System.out.println(ctx.vars_sect.size());
         // System.out.println(ctx.func_sect.size());
-        // System.out.println(ctx.vars_sect()[0]);
-        // System.out.println(ctx.vars_sect().getChild().getText());
 
-        //for (int i; i <  ctx.vars_sect().size(); i++) {
-        //   System.out.println(visit(func_var_decl).getText());
-       // }
+        // Visita sessao de declaracao de variaveis
+        if (ctx.vars_sect() != null) {
+            visit(ctx.vars_sect());
+		    root.addChild(varsRoot);
+        }
 
-        // Cria raiz da arvore AST com as tabelas de simbolo
-        visit(ctx.vars_sect());
-		root.addChild(varsRoot);
+        // sorry
+        
+        // Visita sessão de funções e procedures
+        if (ctx.func_and_procedures_sect() != null) {
+            visit(ctx.func_and_procedures_sect());
+            root.addChild(funcRoot);
+        }
 
-        this.root = AST.newSubtree(PROGRAM_NODE, NO_TYPE, varsSect, funcSect);
+        /*
+         * fnc_and_procedures_sect: opt_fnc_and_procedures_sect;
+            opt_fnc_and_procedures_sect:
+                | fnc_and_procedures_list;
+            fnc_and_procedures_list: fnc_and_procedures_list fnc_and_procedures 
+                | fnc_and_procedures;
+            fnc_and_procedures: fnc_sign_decl_list | procedures_decl_list;
+         */
+
+        // Visita sessao de statements
+        // if (ctx.stmt_sect() != null) {
+        //     AST stmtSect = visit(ctx.stmt_sect());
+        //     root.addChild(stmtSect); 
+        // }
+        
         return this.root;
     }
 	
     @Override
-    public AST visitVars_sect(Var_sectContext ctx) {
-		varsRoot = AST.newSubtree(VAR_LIST_NODE, NO_TYPE); 
-	 
-		if (ctx.getChildCount()) {
-	    	visit(ctx.opt_var_decl())
+    public AST visitVars_sect(Vars_sectContext ctx) {	 
+        varsRoot = AST.newSubtree(VAR_LIST_NODE, NO_TYPE);
+		if (ctx.getChildCount() > 0) {
+	    	visit(ctx.opt_var_decl());
 		}
-		
-		return varsRoot
+        AST.varTable = variableTable;
+        // System.out.println(varsRoot.printNodeDot());
+		return varsRoot;
     }	    
-
-//     @Override 
-//     public AST visitVar_decl_list(Var_decl_listContext ctx) {
-//         //System.out.println(ctx.var_decl_list());
-//         //System.out.println(ctx.var_decl_list().getText());
-//         //System.out.println(ctx.getChild(1));
-//         System.out.println(ctx.getChildCount());
-//         System.out.println(ctx.getText());
-//         if ( ctx.getChildCount() == 1 ) {
-//             AST varDecl = visit(ctx.var_decl());
-//             System.out.println(varDecl.printNodeDot());
-//         } else {
-//             AST varDecl = visit(ctx.var_decl());
-//             System.out.println(varDecl.printNodeDot());
-//             AST varDeclList = visit(ctx.var_decl_list());
-//         }
-
-//         // // Verifica se existe declaração de variáveis
-//         // if (ctx.block().variableDeclarationPart().size() > 0) {
-//         //     varsSect = visit(ctx.block().variableDeclarationPart(0));
-//         // }
-
-//         /**
-        
-        
-//          */
-//         return AST.newSubtree(VAR_LIST_NODE, NO_TYPE);
-
-//         //for (int i = 0; i < ctx.getChildCount(); i++) {
-//         //   System.out.println("i: " + i);
-//         //   System.out.println(ctx.getChild(i).getText());
-//         //   System.out.println("tamanho dos filhos: " + ctx.getChild(i).getChildCount());
-//         //    for (int j = 0; j < ctx.getChild(i).getChildCount(); j++) {
-//         //        System.out.println("j: " + j);
-//         //        System.out.println("linha: " + ctx.getChild(i).getChild(j).getText());
-//         //    }
-//            // System.out.println(visit(ctx.var_decl_list(i)).getText());
-//         //}
-        
-//         // for (var teste: ctx.var_decl()) {
-//         //     System.out.println(teste.getText());
-//         // }
-
-//     }
-
-
 
     @Override
     public AST visitVar_decl(Var_declContext ctx) {
@@ -184,40 +155,51 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
         // Visita a declaração dos ids para colocar a variável na tabela de variáveis.
         visit(ctx.id_list());
 		
-		varsRoot = AST.newSubtree(VAR_DECL_NODE, NO_TYPE);
         return AST.newSubtree(VAR_DECL_NODE, NO_TYPE);
-    	//return NO_TYPE;
+    }
+// tava olhando o parser do zambom ai confundi
+    public AST visitFnc_and_procedures_sect(Fnc_and_procedures_sectContext ctx) {
+        funcRoot = 
+        if (ctx.opt_fnc_and_procedures_sect() != null) {
+            visit(ctx.opt_fnc_and_procedures_sect());
+        }
     }
 
-    // @Override
-    // public Type visitFnc_sign_decl(Fnc_sign_declContext ctx) {
-    //     this.lastEnteredScope = Scope.FUNCTION;
+    
+    // sim, mas isso é facil de checar
+    // saquei, então tem que ter um metodo novo? pro opt_fnc_and_procedures_sect
+    
+    
+    @Override
+    public AST visitFnc_sign_decl(Fnc_sign_declContext ctx) {
+        this.lastEnteredScope = Scope.FUNCTION;
 
-    //     String funcName = ctx.ID().getText();
-    //     int startLine = ctx.getStart().getLine();
-    //     Type returnType = visit(ctx.type_spec());
+        String funcName = ctx.ID().getText();
+        int startLine = ctx.getStart().getLine();
+        visit(ctx.type_spec());
 
-    //     if (variableTable.containsKey(funcName)) {
-    //         System.out.println("Erro: there is already a variable with " + funcName + " name!");
-    //         passed = false;
-    //         return NO_TYPE;
-    //     } else if  (functionTable.containsKey(funcName)) {
-    //         System.out.println("Erro: the function " + funcName + " has already been declared!");
-    //         passed = false;
-    //         return NO_TYPE;
-    //     } else {
-    //         EntryFunc newFunc = new EntryFunc(funcName, startLine, returnType);
-    //         this.lastFuncVisited = funcName;
-    //         functionTable.addFunc(newFunc);
+        // Variavavel com esse nome ja declarada
+        if (variableTable.containsKey(funcName)) {
+            System.out.println("Erro: there is already a variable with " + funcName + " name!");
+            passed = false; // 
+            return new AST(FUNC_DECL_NODE, -1, NO_TYPE);
+        } else if  (functionTable.containsKey(funcName)) {
+            // funcao ja declarada
+            System.out.println("Erro: the function " + funcName + " has already been declared!");
+            passed = false;
+            return new AST(FUNC_DECL_NODE, -1, NO_TYPE);
+        } else {
+            EntryFunc newFunc = new EntryFunc(funcName, startLine, lastDeclType);
+            this.lastFuncVisited = funcName;
+            functionTable.addFunc(newFunc);
 
-    //         // Visita parametros para adicionar a lista de simbolos da funcao
-    //         visit(ctx.fnc_sign_params_sect());
-    //         visit(ctx.func_vars_sect());
-    //     }
-
-    //     this.lastEnteredScope = Scope.GLOBAL;
-    //     return NO_TYPE;
-    // }
+            // Visita parametros para adicionar a lista de simbolos da funcao
+            visit(ctx.fnc_sign_params_sect());
+            visit(ctx.func_vars_sect());
+        }
+        this.lastEnteredScope = Scope.GLOBAL;
+        return new AST(FUNC_DECL_NODE, 0, NO_TYPE);
+    }
 
     // @Override
     // public Type visitProcedures_decl(Procedures_declContext ctx) {
@@ -290,38 +272,37 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
     //     return NO_TYPE;   
     // }
 
-    // @Override
-    // public Type visitBoolType(BoolTypeContext ctx) {
-    //     this.lastDeclType = BOOL_TYPE;
-    //     return BOOL_TYPE;
-    // }
+    @Override
+    public AST visitBoolType(BoolTypeContext ctx) {
+        this.lastDeclType = BOOL_TYPE;
+        return new AST(TYPE_NODE, 0, BOOL_TYPE);
+    }
 
-    // @Override
-    // public Type visitIntType(IntTypeContext ctx) {
-    //     this.lastDeclType = INT_TYPE;
-    //     return INT_TYPE;
-    // }
+    @Override
+    public AST visitIntType(IntTypeContext ctx) {
+        this.lastDeclType = INT_TYPE;
+        return new AST(TYPE_NODE, 0, INT_TYPE);
+    }
 
-    // @Override
-    // public Type visitRealType(RealTypeContext ctx) {
-    //     this.lastDeclType = REAL_TYPE;
-    //     return REAL_TYPE;
-    // }
+    @Override
+    public AST visitRealType(RealTypeContext ctx) {
+        this.lastDeclType = REAL_TYPE;
+        return new AST(TYPE_NODE, 0, REAL_TYPE);
+    }
 
-    // @Override
-    // public Type visitCharType(CharTypeContext ctx) {
-    //     this.lastDeclType = CHAR_TYPE;
-    //     return CHAR_TYPE;
-    // }
+    @Override
+    public AST visitCharType(CharTypeContext ctx) {
+        this.lastDeclType = CHAR_TYPE;
+        return new AST(TYPE_NODE, 0, CHAR_TYPE);
+    }
 
     @Override
     public AST visitId_node(Id_nodeContext ctx) {
         String id = ctx.getText();
         int line = (ctx.getStart().getLine());
 
-        
         // Check if id is already in table
-        if (variableTable.containsKey(id)) {
+        if (variableTable.contains(id)) {
             System.out.println("Error: variable " + id + " already declared");
             passed = false;
             return null;  
@@ -333,10 +314,15 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
             }else{
                 entry = new EntryInput(id, line, lastDeclType, false);
             }
-            variableTable.addVar(entry);
-            AST node = new AST(VAR_DECL_NODE, id, lastDeclType);
+  
+            System.out.println("Adding variable " + entry.toString() + " to table");
+            int idx = variableTable.addVar(entry);
+         
+            AST node = new AST(VAR_DECL_NODE, idx, lastDeclType);
 			varsRoot.addChild(node);
-			
+
+            System.out.println("Size:" + varsRoot.children.size());
+         
 			return node;
         }
     }
@@ -607,24 +593,26 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
     //     }
     // }
 
-    // @Override
-	// public Type visitExprStrVal(ExprStrValContext ctx) {
-	// 	// Adiciona a string na tabela de strings.
-    //     String id = ctx.getText();
-    //     int line = (ctx.getStart().getLine());
+    @Override
+	public AST visitExprStrVal(ExprStrValContext ctx) {
+		// Adiciona a string na tabela de strings.
+        System.out.println("oi");
+        String id = ctx.getText();
+        int line = (ctx.getStart().getLine());
 
-    //     if (stringTable.containsKey(id)) {
-    //         System.out.println("Error: string " + id + " already declared");
-    //         passed = false;
-    //         return NO_TYPE;
-    //     } else {
-    //         // Add to table
-    //         EntryStr entry = new EntryStr(id, line);
-    //         stringTable.addStr(entry);
-    //     }
-    //     //return new AST(STR_VAL_NODE, id, STRING_TYPE);
-	// 	return STRING_TYPE;
-	// }
+        if (stringTable.contains(id)) {
+            System.out.println("Error: string " + id + " already declared");
+            passed = false;
+            return new AST(STR_VAL_NODE, -1, STRING_TYPE); 
+            // contains não é == lookup? saquei, deixa eu mudar
+        } else {
+            // Add to table
+            EntryStr entry = new EntryStr(id, line);
+            int idx = stringTable.addStr(entry);
+            System.out.println(id + " " + idx);
+            return new AST(STR_VAL_NODE, idx, STRING_TYPE);
+        }
+	}
 
     private void typeError(int lineNo, String op, Type t1, Type t2) {
     	System.out.printf("SEMANTIC ERROR (%d): incompatible types for operator '%s', LHS is '%s' and RHS is '%s'.\n",

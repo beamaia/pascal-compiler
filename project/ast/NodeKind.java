@@ -119,9 +119,14 @@ public enum NodeKind {
             return "func_list";
         }
     },
-    FUNCTION_NODE {
+    FUNC_NODE {
         public String toString() {
             return "function";
+        }
+    },
+    FUNC_DECL_NODE {
+        public String toString() {
+            return "func_decl";
         }
     },
 
@@ -176,6 +181,13 @@ public enum NodeKind {
     R2S_NODE {
 		public String toString() {
             return "R2S";
+        }
+	},
+
+    /* SETTING TYPE */
+    TYPE_NODE {
+		public String toString() {
+            return "Type";
         }
 	};
 
