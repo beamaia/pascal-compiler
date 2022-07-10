@@ -85,53 +85,58 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
 
     private String lastFuncVisited;
 
+    public SemanticChecker() {
+        this.root = AST.newSubtree(PROGRAM_NODE, NO_TYPE);
+    }
 
     /**
      * Visita programa e cria no da arvore AST
      * @param ctx ProgramContext
      */
-    @Override
-    public AST visitProgram(ProgramContext ctx) {
-        this.root = AST.newSubtree(PROGRAM_NODE, NO_TYPE);
-        // Cada tabela de simbolos eh criada como uma sub-arvore da raiz da arvore AST
+    // @Override
+    // public AST visitProgram(ProgramContext ctx) {
+    //     //this.root = AST.newSubtree(PROGRAM_NODE, NO_TYPE);
+    //     // Cada tabela de simbolos eh criada como uma sub-arvore da raiz da arvore AST
  
-        // funcSect = AST.newSubtree(FUNC_LIST_NODE, NO_TYPE); 
-        // stmtSect = AST.newSubtree(STMT_LIST_NODE, NO_TYPE);
+    //     // funcSect = AST.newSubtree(FUNC_LIST_NODE, NO_TYPE); 
+    //     // stmtSect = AST.newSubtree(STMT_LIST_NODE, NO_TYPE);
 
-        // Visita cada secao da arvore e adiciona a sub-arvore criada ao no da raiz da arvore AST
-        // System.out.println(ctx.func_sect.size());
+    //     // Visita cada secao da arvore e adiciona a sub-arvore criada ao no da raiz da arvore AST
+    //     // System.out.println(ctx.func_sect.size());
 
-        // Visita sessao de declaracao de variaveis
-        if (ctx.vars_sect() != null) {
-            visit(ctx.vars_sect());
-		    root.addChild(varsRoot);
-        }
+    //     // Visita sessao de declaracao de variaveis
+    //     // if (ctx.vars_sect() != null) {
+    //     //     visit(ctx.vars_sect());
+	// 	//     root.addChild(varsRoot);
+    //     // }
 
-        // sorry
+    //     System.out.println("CTX = " + ctx.getChildCount());
+
+    //     // sorry
         
-        // Visita sessão de funções e procedures
-        if (ctx.func_and_procedures_sect() != null) {
-            visit(ctx.func_and_procedures_sect());
-            root.addChild(funcRoot);
-        }
+    //     // Visita sessão de funções e procedures
+    //     // if (ctx.func_and_procedures_sect() != null) {
+    //     //     visit(ctx.func_and_procedures_sect());
+    //     //     root.addChild(funcRoot);
+    //     // }
 
-        /*
-         * fnc_and_procedures_sect: opt_fnc_and_procedures_sect;
-            opt_fnc_and_procedures_sect:
-                | fnc_and_procedures_list;
-            fnc_and_procedures_list: fnc_and_procedures_list fnc_and_procedures 
-                | fnc_and_procedures;
-            fnc_and_procedures: fnc_sign_decl_list | procedures_decl_list;
-         */
+    //     /*
+    //      * fnc_and_procedures_sect: opt_fnc_and_procedures_sect;
+    //         opt_fnc_and_procedures_sect:
+    //             | fnc_and_procedures_list;
+    //         fnc_and_procedures_list: fnc_and_procedures_list fnc_and_procedures 
+    //             | fnc_and_procedures;
+    //         fnc_and_procedures: fnc_sign_decl_list | procedures_decl_list;
+    //      */
 
-        // Visita sessao de statements
-        // if (ctx.stmt_sect() != null) {
-        //     AST stmtSect = visit(ctx.stmt_sect());
-        //     root.addChild(stmtSect); 
-        // }
+    //     // Visita sessao de statements
+    //     // if (ctx.stmt_sect() != null) {
+    //     //     AST stmtSect = visit(ctx.stmt_sect());
+    //     //     root.addChild(stmtSect); 
+    //     // }
         
-        return this.root;
-    }
+    //     return this.root;
+    // }
 	
     @Override
     public AST visitVars_sect(Vars_sectContext ctx) {	 
@@ -141,6 +146,7 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
 		}
         AST.varTable = variableTable;
         // System.out.println(varsRoot.printNodeDot());
+        root.addChild(varsRoot);
 		return varsRoot;
     }	    
 
@@ -157,12 +163,13 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
 		
         return AST.newSubtree(VAR_DECL_NODE, NO_TYPE);
     }
-// tava olhando o parser do zambom ai confundi
+    // tava olhando o parser do zambom ai confundi
     public AST visitFnc_and_procedures_sect(Fnc_and_procedures_sectContext ctx) {
-        funcRoot = 
-        if (ctx.opt_fnc_and_procedures_sect() != null) {
-            visit(ctx.opt_fnc_and_procedures_sect());
-        }
+        funcRoot = AST.newSubtree(FUNC_LIST_NODE, NO_TYPE);
+        
+        visit(ctx.opt_fnc_and_procedures_sect());
+        
+        return this.funcRoot;
     }
 
     
@@ -179,7 +186,7 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
         visit(ctx.type_spec());
 
         // Variavavel com esse nome ja declarada
-        if (variableTable.containsKey(funcName)) {
+        if (variableTable.contains(funcName)) {
             System.out.println("Erro: there is already a variable with " + funcName + " name!");
             passed = false; // 
             return new AST(FUNC_DECL_NODE, -1, NO_TYPE);
@@ -327,25 +334,25 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
         }
     }
 
-    // @Override
-    // public Type visitArrayTypeDecl(ArrayTypeDeclContext ctx) {
-    //     this.isArray = true;
-    //     visit(ctx.array_start());
-    //     visit(ctx.array_end());
-    //     return NO_TYPE;
-    // }
+    @Override
+    public AST visitArrayTypeDecl(ArrayTypeDeclContext ctx) {
+        this.isArray = true;
+        visit(ctx.array_start());
+        visit(ctx.array_end());
+        return null;
+    }
 
-    // @Override
-    // public Type visitArray_start(Array_startContext ctx) {
-    //     this.start = Integer.parseInt(ctx.getText());
-    //     return NO_TYPE;
-    // }
+    @Override
+    public AST visitArray_start(Array_startContext ctx) {
+        this.start = Integer.parseInt(ctx.getText());
+        return null;
+    }
 
-    // @Override
-    // public Type visitArray_end(Array_endContext ctx) {
-    //     this.end = Integer.parseInt(ctx.getText());
-    //     return NO_TYPE;
-    // }
+    @Override
+    public AST visitArray_end(Array_endContext ctx) {
+        this.end = Integer.parseInt(ctx.getText());
+        return null;
+    }
 
     // @Override
     // public Type visitAssignStmtSimple(AssignStmtSimpleContext ctx) {
