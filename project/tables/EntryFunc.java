@@ -22,11 +22,12 @@ public class EntryFunc {
         this.type = type;
     }
 
-    public boolean addVar(EntryInput entry) {
+    public int addVar(EntryInput entry) {
         int idx = this.variableTable.addVar(entry);
-        return idx != -1;
+        return idx;
     }
 
+    // Verifica se uma funcao tem uma determinada variavel
     public boolean containsKey(String key) {
         return variableTable.contains(key);
 
