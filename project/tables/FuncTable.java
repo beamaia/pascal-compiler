@@ -1,43 +1,81 @@
 package tables;
 
-import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
+
 import tables.EntryInput;
+import tables.EntryFunc;
 
 import types.Type;
 
 import java.lang.StringBuilder;
 import java.util.Formatter;
 
-public class FuncTable extends HashMap<String, EntryFunc> {
+public class FuncTable{
 
-    public boolean addFunc(EntryFunc entry) {
-        String s = entry.name;
-        if ( containsKey(s) ) {
-            return false;
+    public List<EntryFunc> table = new ArrayList<EntryFunc>();
+
+    public int addFunc(EntryFunc e) {
+        int idxAdded = table.size();
+        table.add(e);
+        return idxAdded;
+    }
+    
+    public EntryFunc getFunc(String name) {
+        for (int i= 0; i < table.size(); i++) {
+            EntryFunc func = table.get(i);
+            if (func.name == name) {
+                return func;
+            }
         }
 
-        put(s, entry);
-        return true;
-	}
+        return null;
+    }
+
+    public VarTable getVarTable(int idx) {
+        return this.table.get(idx).variableTable;
+    }
+    
+
+    public VarTable getVarTable(String name) {
+        for (int i=0; i < table.size(); i++) {
+            if (table.get(i).name == name)
+                return this.table.get(i).variableTable;
+        }
+        return null;
+    }
+    
 
     public boolean funcContainsVar(String funcName, String varName) {
-        EntryFunc func = get(funcName);
-        return func.containsKey(varName);
+        EntryFunc func = this.getFunc(funcName);
+
+        if (func!= null && func.name == funcName) {
+            return func.containsKey(varName);
+        }
+
+        return false;
     }
 
     public EntryInput getFuncVar(String funcName, String varName) {
-        EntryFunc func = get(funcName);
-
-        return func.getVar(varName);
+        EntryFunc func =  this.getFunc(funcName);
+        EntryInput vars = func.getVar(varName);
+        return vars;
     }
 
-    public boolean addVarToFunc(String funcName, EntryInput entry) {
-        EntryFunc func = get(funcName);
-        return func.addVar(entry);
+    public int addVarToFunc(String funcName, EntryInput entry) {
+        EntryFunc func = this.getFunc(funcName);
+
+        if (func != null) {
+            return func.addVar(entry);
+        }
+
+        System.out.println(funcName + " doesnt have var " + entry.name);
+
+        return -1;
     }
 
-    public EntryFunc getFunc(String funcName) {
-        return get(funcName);
+    public String getName(int idx) {
+        return table.get(idx).name;
     }
 
     public String toString() {
@@ -45,9 +83,8 @@ public class FuncTable extends HashMap<String, EntryFunc> {
 		Formatter f = new Formatter(sb);
 		f.format("Function table:\n");
         
-		// iterating hashmap<String, EntryInput>
-        for (String key : keySet()) {
-            f.format("%s\n", get(key).toString());
+        for (int i = 0; i < table.size(); i++) {
+            f.format("%s\n", table.get(i).toString());
         }
 		f.close();
 		return sb.toString();
