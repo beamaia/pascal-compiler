@@ -182,6 +182,6 @@ expr: left=expr op=(LT | LTE | BT | BTE | EQ | NEQ | AND | OR) right=expr     # 
     | ID               # exprId
     | ID LSB array_index RSB  # exprArrayAccess
     | fnc              # exprFnc
-    | TRUE             # exprBooleanVal
-    | FALSE            # exprBooleanVal
+    | TRUE             # exprBooleanValTrue
+    | FALSE            # exprBooleanValFalse
     ;    
