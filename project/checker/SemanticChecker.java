@@ -39,7 +39,6 @@ import parser.PASParser.ExprCharValContext;
 import parser.PASParser.ExprStrValContext;
 import parser.PASParser.ExprIdContext;
 import parser.PASParser.ExprArrayAccessContext;
-import parser.PASParser.ExprBooleanValContext;
 
 import parser.PASParser.Var_declContext;
 
@@ -93,6 +92,7 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
     }	
 
     /*************************** DECLARACAO DE VARIAVEIS ***************************/
+
     /**
     Visita secao de declaraca de variaveis. Inicializa a raiz de variaveis que sera 
     adicionado as variaveis. Se tiver variaveis declaradas no contexto do filho,
@@ -396,6 +396,8 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
         
     }
 
+    /*************************** MANIPULACAO DO TIPO ***************************/
+
     @Override
     /**
     Atualiza o lastDeclType para BOOL_TYPE.
@@ -456,30 +458,80 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
         return null;
     }
 
-    // @Override
-    // public Type visitAssignStmtSimple(AssignStmtSimpleContext ctx) {
-    //     String varName = ctx.ID().getText();
-    //     Type varType, exprType;
+    /*************************** DECLARACAO DE STATEMENTS ***************************/
 
-    //     if(variableTable.containsKey(varName)){
-    //         varType = variableTable.getType(varName);
-    //     } else if (lastEnteredScope == Scope.FUNCTION && functionTable.funcContainsVar(lastFuncVisited, varName)) {
-    //         varType = functionTable.getFuncVar(lastFuncVisited, varName).type;
-    //     }else {
-    //         System.out.println("Error: variable " + varName + " not declared");
-    //         passed = false;
-    //         return NO_TYPE;
-    //     }
+    @Override
+    public AST visitStmt_sect(Stmt_sectContext ctx) {
+        AST stmtTree = AST.newSubtree(STMT_LIST_NODE, NO_TYPE);
+        AST child;
+
+        if (ctx.getChildCount() > 0) {
+            child = visit(ctx.stmt_list());
+            // TODO esta null
+            System.out.println("dad");
+            if (child != null) {
+                stmtTree.addChild(child);
+            }
+            // stmtTree.addChild(child);
+        }
+
+        root.addChild(stmtTree);
+        return stmtTree;
+    }
+
+    @Override
+    public AST visitStmt_list(Stmt_listContext ctx) {
+        // AST child;
+        // if (ctx.getChildCount() > 0) {
+        //     if (ctx.stmt() != null) {
+        //         child = visit(ctx.stmt());
+        //         if (child != null) {
+        //             return child;
+        //         }
+        //     } else {
+        //         return visit(ctx.stmt_list());
+        //     }
+        // } 
+        // return stmtTree;
+    }
+
+    @Override
+    public AST visitAssignStmtSimple(AssignStmtSimpleContext ctx) {
+        System.out.println("visitAssignStmtSimple");
+        String varName = ctx.ID().getText();
+        Type varType;
+        AST exprNode;
+
+        if(variableTable.contains(varName)){
+            varType = variableTable.getType(variableTable.getEntryId(varName));
+        } else if (lastEnteredScope == Scope.FUNCTION && functionTable.funcContainsVar(lastFuncVisited, varName)) {
+            varType = functionTable.getFuncVar(lastFuncVisited, varName).type;
+        }else {
+            System.out.println("Error: variable " + varName + " not declared");
+            passed = false;
+            return new AST(ASSIGN_NODE, -1, NO_TYPE);
+        }
         
-    //     exprType = visit(ctx.expr());
+        exprNode = visit(ctx.expr());
         
-    //     if(exprType != varType){
-    //         System.out.println("Error: expression type doesn't match variable type. Variable is of type " + varType + "while expression is "+exprType+".\n");
-    //         passed = false;
-    //     }
+        Type unif = varType.unifyAttrib(lastDeclType);
+
+        if(unif == NO_TYPE){
+            System.out.println("Error: expression type doesn't match variable type. Variable " + varName + " is of type " + varType + "while expression is "+lastDeclType+".\n");
+            passed = false;
+            return new AST(ASSIGN_NODE, -1, NO_TYPE);
+        }
         
-    //     return NO_TYPE;
-    // }
+        AST assign = new AST(ASSIGN_NODE, 0, NO_TYPE);
+
+        if(exprNode != null){
+            assign.addChild(exprNode);
+        } else {
+            System.out.println("null expr");
+            System.out.println(ctx.getText() + "\n\n\n");
+        }
+        return assign;
+    }
 
     // @Override
     // public Type visitAssignStmtArray(AssignStmtArrayContext ctx) {
@@ -630,42 +682,65 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
     //     return unif;
     // }
 
-    // @Override
-    // public Type visitExprIntVal(ExprIntValContext ctx) {
-    //     return INT_TYPE;
-    // }
+    @Override
+    public AST visitExprIntVal(ExprIntValContext ctx) {
+        int value = Integer.parseInt(ctx.INT_VAL().getText());
+        lastDeclType = INT_TYPE;
+        return new AST(TYPE_NODE, value, INT_TYPE);
+    }
 
-    // @Override
-    // public Type visitExprRealVal(ExprRealValContext ctx) {
-    //     return REAL_TYPE;
-    // }
+    @Override
+    public AST visitExprRealVal(ExprRealValContext ctx) {
+        float value = Float.parseFloat(ctx.REAL_VAL().getText());
+        lastDeclType = REAL_TYPE;
+        return new AST(TYPE_NODE, value, REAL_TYPE);
+    }
 
-    // @Override
-    // public Type visitExprCharVal(ExprCharValContext ctx) {
+    @Override
+    public AST visitExprCharVal(ExprCharValContext ctx) {
+        lastDeclType = CHAR_TYPE;
 
-    //     return CHAR_TYPE;
-        
-    // }
+        String id = ctx.getText();
+        int line = (ctx.getStart().getLine());
 
-    // @Override
-    // public Type visitExprBooleanVal(ExprBooleanValContext ctx) {
-    //     return BOOL_TYPE;
-    // }
+        EntryStr entry = new EntryStr(id, line);
+        int idx = stringTable.addStr(entry);
 
-    // @Override
-    // public Type visitExprId(ExprIdContext ctx) {
-    //     String name = ctx.getText();
+        return new AST(TYPE_NODE, idx, CHAR_TYPE);        
+    }
 
-    //     if (variableTable.containsKey(name)) {
-    //         return variableTable.getType(name);
-    //     } else if (lastEnteredScope == Scope.FUNCTION && functionTable.funcContainsVar(lastFuncVisited, name)) {
-    //         return functionTable.getFuncVar(lastFuncVisited, name).type;
-    //     } else {
-    //         System.out.println("Error: variable " + name + " not declared");
-    //         passed = false;
-    //         return NO_TYPE;
-    //     }
-    // }
+    @Override
+    public AST visitExprBooleanValTrue(ExprBooleanValTrueContext ctx) {
+        lastDeclType = BOOL_TYPE;
+        return new AST(TYPE_NODE, 1, BOOL_TYPE);
+    }
+
+    @Override
+    public AST visitExprBooleanValFalse(ExprBooleanValFalseContext ctx) {
+        lastDeclType = BOOL_TYPE;
+        return new AST(TYPE_NODE, 0, BOOL_TYPE);
+    }
+
+    @Override
+    public AST visitExprId(ExprIdContext ctx) {
+        String name = ctx.getText();
+
+        if (variableTable.contains(name)) {
+            int idx = variableTable.getEntryId(name);
+            Type type = variableTable.getType(idx);
+
+            return new AST(VAR_USE_NODE, idx, type);
+        } else if (lastEnteredScope == Scope.FUNCTION && functionTable.funcContainsVar(lastFuncVisited, name)) {
+            Type type = functionTable.getFuncVar(lastFuncVisited, name).type;
+            int idx = functionTable.getVarTable(lastFuncVisited).getEntryId(name);
+
+            return new AST(VAR_USE_NODE, idx, type);
+        } else {
+            System.out.println("Error: variable " + name + " not declared");
+            passed = false;
+            return new AST(VAR_USE_NODE, -1, NO_TYPE);
+        }
+    }
 
     // @Override
     // public Type visitExprArrayAccess(ExprArrayAccessContext ctx) {
