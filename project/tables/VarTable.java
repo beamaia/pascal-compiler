@@ -43,6 +43,17 @@ public class VarTable{
         return null;
     }
 
+    public int getEntryId(String name) {
+        for(int i = 0; i < table.size(); i++) {
+            EntryInput entry = this.getEntry(name);
+            if(entry != null) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
     public boolean contains(String s) {
         for (int i = 0; i < table.size(); i++) {
             if (table.get(i).name.equals(s)) {
