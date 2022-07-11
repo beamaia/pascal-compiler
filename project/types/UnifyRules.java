@@ -9,7 +9,7 @@ public class UnifyRules {
         { Type.INT_TYPE, Type.REAL_TYPE, Type.NO_TYPE, Type.NO_TYPE }, // INT PARA OUTROS
         { Type.REAL_TYPE, Type.REAL_TYPE, Type.NO_TYPE, Type.NO_TYPE }, // REAL PARA OUTROS
         { Type.NO_TYPE, Type.NO_TYPE, Type.NO_TYPE, Type.NO_TYPE }, // BOOLEAN PARA OUTROS
-        { Type.NO_TYPE, Type.NO_TYPE, Type.NO_TYPE, Type.NO_TYPE } // STRING PARA OUTROS
+        { Type.NO_TYPE, Type.NO_TYPE, Type.NO_TYPE, Type.NO_TYPE } // CHAR PARA OUTROS
     };
 
     // tabela de unificação do operador div
@@ -17,7 +17,7 @@ public class UnifyRules {
         { Type.INT_TYPE, Type.NO_TYPE, Type.NO_TYPE, Type.NO_TYPE }, // INT PARA OUTROS
         { Type.NO_TYPE, Type.NO_TYPE, Type.NO_TYPE, Type.NO_TYPE }, // REAL PARA OUTROS
         { Type.NO_TYPE, Type.NO_TYPE, Type.NO_TYPE, Type.NO_TYPE }, // BOOLEAN PARA OUTROS
-        { Type.NO_TYPE, Type.NO_TYPE, Type.NO_TYPE, Type.NO_TYPE } // STRING PARA OUTROS
+        { Type.NO_TYPE, Type.NO_TYPE, Type.NO_TYPE, Type.NO_TYPE } // CHAR PARA OUTROS
     };
 
     // tabela de unificação de tipos primitivos para o operador '=', '<>', '<', '>', '<=', '>='
@@ -28,5 +28,11 @@ public class UnifyRules {
         { Type.NO_TYPE, Type.NO_TYPE, Type.NO_TYPE, Type.BOOL_TYPE }
     };
 
-    
+    // tabela de unificacoa de tipos primitivos para verificacao de widening
+    public static Type attrib[][] = {
+        {Type.INT_TYPE, Type.NO_TYPE, Type.NO_TYPE, Type.NO_TYPE}, // INT PARA OUTROS
+        {Type.REAL_TYPE, Type.REAL_TYPE, Type.NO_TYPE, Type.NO_TYPE}, // REAL PARA OUTROS
+        {Type.NO_TYPE, Type.NO_TYPE, Type.BOOL_TYPE, Type.NO_TYPE}, // BOOLEAN PARA OUTROS
+        {Type.NO_TYPE, Type.NO_TYPE, Type.NO_TYPE, Type.CHAR_TYPE} // CHAR PARA OUTROS
+    };
 }

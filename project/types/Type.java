@@ -45,4 +45,8 @@ public enum Type {
     public Type unifyComp(Type that) {
         return UnifyRules.comp[this.ordinal()][that.ordinal()];
     }
+
+    public Type unifyAttrib(Type that) {
+        return UnifyRules.attrib[this.ordinal()][that.ordinal()];
+    }
 }
