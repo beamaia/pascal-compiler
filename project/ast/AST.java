@@ -58,8 +58,8 @@ public class AST {
     }
 
     private static int nr;
-    public static VarTable varTable;
-    private static FuncTable functionTable;
+    public VarTable varTable;
+    public static FuncTable functionTable;
     private static StrTable stringTable;
 
     public int printNodeDot() {
@@ -71,7 +71,9 @@ public class AST {
 	    }
 	    if (this.kind == NodeKind.VAR_DECL_NODE || this.kind == NodeKind.VAR_USE_NODE) {
 	    	System.err.printf("%s@", varTable.getName(this.intData)); 
-	    } else {
+	    } else if (this.kind == NodeKind.FUNC_DECL_NODE || this.kind == NodeKind.FUNC_USE_NODE) {
+            System.err.printf("%s@", functionTable.getName(this.intData)); 
+        } else {
 	    	System.err.printf("%s", this.kind.toString());
 	    }
 	    if (NodeKind.hasData(this.kind)) {
@@ -99,9 +101,8 @@ public class AST {
 	}
 
     // Imprime a árvore toda em stderr.
-	public static void printDot(AST tree, VarTable table) {
+	public static void printDot(AST tree) {
 	    nr = 0;
-	    varTable = table;
 	    System.err.printf("digraph {\ngraph [ordering=\"out\"];\n");
 	    tree.printNodeDot();
 	    System.err.printf("}\n");
