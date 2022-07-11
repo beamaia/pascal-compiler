@@ -90,57 +90,7 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
     public SemanticChecker() {
         this.root = AST.newSubtree(PROGRAM_NODE, NO_TYPE);
         // AST.printDot(this.root, variableTable);
-    }
-
-    /**
-     * Visita programa e cria no da arvore AST
-     * @param ctx ProgramContext
-     */
-    // @Override
-    // public AST visitProgram(ProgramContext ctx) {
-    //     //this.root = AST.newSubtree(PROGRAM_NODE, NO_TYPE);
-    //     // Cada tabela de simbolos eh criada como uma sub-arvore da raiz da arvore AST
- 
-    //     // funcSect = AST.newSubtree(FUNC_LIST_NODE, NO_TYPE); 
-    //     // stmtSect = AST.newSubtree(STMT_LIST_NODE, NO_TYPE);
-
-    //     // Visita cada secao da arvore e adiciona a sub-arvore criada ao no da raiz da arvore AST
-    //     // System.out.println(ctx.func_sect.size());
-
-    //     // Visita sessao de declaracao de variaveis
-    //     // if (ctx.vars_sect() != null) {
-    //     //     visit(ctx.vars_sect());
-	// 	//     root.addChild(varsRoot);
-    //     // }
-
-    //     System.out.println("CTX = " + ctx.getChildCount());
-
-    //     // sorry
-        
-    //     // Visita sessão de funções e procedures
-    //     // if (ctx.func_and_procedures_sect() != null) {
-    //     //     visit(ctx.func_and_procedures_sect());
-    //     //     root.addChild(funcRoot);
-    //     // }
-
-    //     /*
-    //      * fnc_and_procedures_sect: opt_fnc_and_procedures_sect;
-    //         opt_fnc_and_procedures_sect:
-    //             | fnc_and_procedures_list;
-    //         fnc_and_procedures_list: fnc_and_procedures_list fnc_and_procedures 
-    //             | fnc_and_procedures;
-    //         fnc_and_procedures: fnc_sign_decl_list | procedures_decl_list;
-    //      */
-
-    //     // Visita sessao de statements
-    //     // if (ctx.stmt_sect() != null) {
-    //     //     AST stmtSect = visit(ctx.stmt_sect());
-    //     //     root.addChild(stmtSect); 
-    //     // }
-        
-    //     return this.root;
-    // }
-	
+    }	
 
     /*************************** DECLARACAO DE VARIAVEIS ***************************/
     /**
@@ -148,6 +98,7 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
     adicionado as variaveis. Se tiver variaveis declaradas no contexto do filho,
     visita-lo. Os filhos sao adicionados dentro do contexto de declaracao deles.
     Adiciona a subarvore com declaracoes de variaveis a raiz.
+    @param ctx Contexto da secao de declaracao de variaveis.
     */
     @Override
     public AST visitVars_sect(Vars_sectContext ctx) {	 
@@ -167,6 +118,7 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
     /**
     Visita contexto de declaracao de tipo para mudar o ultimo tipo visitado.
     Visita o no de declaracao de variavel para adicionar variaveis a raiz de vars.
+    @param ctx Contexto de declaracao de variavel.
     */
     public AST visitVar_decl(Var_declContext ctx) {
 
@@ -184,6 +136,7 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
     @Override
     /**
     Adiciona id para AST de variaveis.
+    @param ctx Contexto de id.
     */
     public AST visitId_node(Id_nodeContext ctx) {
         String id = ctx.getText();
@@ -215,6 +168,7 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
     @Override
     /**
     Visita contexto que atualiza o tamanho do array.
+    @param ctx Contexto de array.
      */
     public AST visitArrayTypeDecl(ArrayTypeDeclContext ctx) {
         this.isArray = true;
@@ -225,10 +179,12 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
 
     /*************************** DECLARACAO DE FUNCOES E PROCEDURES ***************************/
 
+    @Override
     /**
     Visita secao de declaracao de funcoes e procedures. Similar as variaveis, as funcoes
     serao adicionadas dentro do contexto que ela é declarada. Os proximos contextos a serem 
     visitados sao fnc_sign_decl_list e procedures_decl_list.
+    @param ctx Contexto de declaracao de funcoes e procedures.
     */
     public AST visitFnc_and_procedures_sect(Fnc_and_procedures_sectContext ctx) {
         funcRoot = AST.newSubtree(FUNC_LIST_NODE, NO_TYPE);
@@ -240,6 +196,13 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
     }
 
     @Override
+    /**
+    Visita lista de declaracoes de funcoes e procedures. Verifica se cada contexto
+    existe antes de visita-lo. O retorno de cada visit nao eh utilizado, as funcoes
+    (procedures sao considerados como funcoes) sao adicionadas no contexto de
+    proc_func_id_node.
+    @param ctx Contexto de lista de declaracoes de funcoes e procedures.
+     */
     public AST visitFnc_and_procedures(Fnc_and_proceduresContext ctx) {
         funcVarsRoot = AST.newSubtree(VAR_LIST_NODE, NO_TYPE);
 
@@ -255,6 +218,17 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
     }
 
     @Override
+    /**
+    Visita declaracao de funcao. Se ja existe uma variavel com o mesmo nome da funcao
+    ou se existe uma funcao ja declarada com o nome da funcao, ocorre erro. Caso contrario,
+    cria Entry de funcao, visita secao de parametros e corpo da funcao, e adiciona as 
+    variaveis locais ao Entry da funcao. Cada vez que visita uma declaracao de variavel,
+    seja por parametro ou uma secao var dentro de funcao, no contexto proc_func_id_node,
+    elas sao adicionadas a funcVarsRoot. No fim, eh criado um no AST de FUNC_DECL_NODE
+    e eh adicionado a funcRoot. A tabela de varTables tambem eh atualizada, para que no
+    printDot, seja possivel mostrar as variaveis da funcao.
+    @param ctx Contexto de declaracao de funcao.
+     */
     public AST visitFnc_sign_decl(Fnc_sign_declContext ctx) {
         AST func;
 
@@ -302,6 +276,10 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
     }
 
     @Override
+    /** 
+    Visita declaracao de procedures. Tem o mesmo comportamento que declaracao de funcao.
+    @param ctx Contexto de declaracao de procedures.
+     */
     public AST visitProcedures_decl(Procedures_declContext ctx) {
         this.lastEnteredScope = Scope.FUNCTION;
 
@@ -341,6 +319,12 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
     }
 
     @Override
+    /**
+    Visita secao de parametros da declaracao de func/procedure. Visita type_spec 
+    para atualizar o ultimo tipo visitado e a lista de ids para adicionar a 
+    funcVarsRoot. O retorno nao eh utilizado no programa.
+    @param ctx Contexto de secao de parametros da declaracao de func/procedure.
+     */
     public AST visitFnc_sign_param_decl(Fnc_sign_param_declContext ctx) {
         
         this.isArray = false;
@@ -355,6 +339,10 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
     }
 
     @Override 
+    /**
+    Visita secao de vars declaracao de funcoes.
+    @param ctx Contexto de secao de vars da declaracao de funcoes.
+     */
     public AST visitFunc_vars_sect(Func_vars_sectContext ctx) {
 		if (ctx.getChildCount() > 0) {
 	    	visit(ctx.func_opt_var_decl());
@@ -365,6 +353,15 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
     
 
     @Override
+    /**
+    Visita declaracao de var de funcoes/procedures. Se a variavel ja foi declarada,
+    seja globalmente ou localmente, retorna uma AST com intData = -1 e atualiza o 
+    atributo passed para false, indicando que houve erro. Um no AST eh criado para
+    variavel. Ela eh adicionara a variavel da funcao, utilizando lastFuncVisited 
+    para encontra varTable da funcao. Eh atualizado a varTable da AST com a varTable
+    da funcao. O no AST eh adicionado a funcVarsRoot. O retorno nao eh utilizado.
+    @param ctx Contexto de declaracao de var de funcoes/procedures. 
+     */
     public AST visitProc_func_id_node(Proc_func_id_nodeContext ctx) {
         String id = ctx.getText();
         int line = ctx.getStart().getLine();
@@ -400,36 +397,60 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
     }
 
     @Override
+    /**
+    Atualiza o lastDeclType para BOOL_TYPE.
+    @param ctx Contexto de tipo bool.
+     */
     public AST visitBoolType(BoolTypeContext ctx) {
         this.lastDeclType = BOOL_TYPE;
         return new AST(TYPE_NODE, 0, BOOL_TYPE);
     }
 
     @Override
+    /**
+    Atualiza o lastDeclType para INT_TYPE.
+    @param ctx Contexto de tipo inteiro.
+     */
     public AST visitIntType(IntTypeContext ctx) {
         this.lastDeclType = INT_TYPE;
         return new AST(TYPE_NODE, 0, INT_TYPE);
     }
 
     @Override
+    /**
+    Atualiza o lastDeclType para REAL_TYPE.
+    @param ctx Contexto de tipo real.
+     */
     public AST visitRealType(RealTypeContext ctx) {
         this.lastDeclType = REAL_TYPE;
         return new AST(TYPE_NODE, 0, REAL_TYPE);
     }
 
     @Override
+    /**
+    Atualiza o lastDeclType para CHAR_TYPE.
+    @param ctx Contexto de tipo char.
+     */
     public AST visitCharType(CharTypeContext ctx) {
         this.lastDeclType = CHAR_TYPE;
         return new AST(TYPE_NODE, 0, CHAR_TYPE);
     }
 
     @Override
+    /**
+    Atualiza o atributo start, indicando o inicio do intervalo de indices.
+    @param ctx Contexto de inicio de intervalo de indices.
+     */
     public AST visitArray_start(Array_startContext ctx) {
         this.start = Integer.parseInt(ctx.getText());
         return null;
     }
 
     @Override
+    /**
+    Atualiza o atributo start, indicando o final do intervalo de indices.
+    @param ctx Contexto de final de intervalo de indices.
+     */
     public AST visitArray_end(Array_endContext ctx) {
         this.end = Integer.parseInt(ctx.getText());
         return null;
