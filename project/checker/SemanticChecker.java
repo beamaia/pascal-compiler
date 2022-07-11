@@ -705,13 +705,12 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
     	passed = false;
     }
 
-    public Type showTables() {
+    public void showTables() {
         System.out.println(variableTable);
         System.out.println("*******************************");
         System.out.println(functionTable);
         System.out.println("*******************************");
         System.out.println(stringTable);
-        AST.printDot(this.root, variableTable);
-        return NO_TYPE;
+        AST.printDot(this.root);
     }
 }
