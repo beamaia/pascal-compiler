@@ -119,9 +119,9 @@ public enum NodeKind {
             return "func_list";
         }
     },
-    FUNC_NODE {
+    FUNC_USE_NODE {
         public String toString() {
-            return "function";
+            return "func_use";
         }
     },
     FUNC_DECL_NODE {
@@ -199,6 +199,8 @@ public enum NodeKind {
 	        case STR_VAL_NODE:
 	        case VAR_DECL_NODE:
 	        case VAR_USE_NODE:
+            case FUNC_DECL_NODE:
+            case FUNC_USE_NODE:
 	            return true;
 	        default:
 	            return false;
