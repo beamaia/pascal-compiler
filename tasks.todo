@@ -1,9 +1,9 @@
 ✔ Vars Sect @done 
 ✔ Func Sect @done (7/10/2022, 11:19:14 PM)
 ☐ Stmt Sect    
-    ✔ Arthimetics (em tese deve ser parecido a logical) @done(22-07-12 00:19)
+    ✔ Arthimetics (falta div e mod) @done(22-07-12 00:19)
     ✔ Logical (em tese deve ser parecido a arthmetics)
-    ☐ Unary not (deve dar pra fazer tranquilo)
+    ✔ Unary not (deve dar pra fazer tranquilo)
     ✔ Types
     ✔ Unary minus
     ☐ If Stmt (fazer isso)
