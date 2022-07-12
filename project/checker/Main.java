@@ -10,7 +10,6 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import parser.PASLexer;
 import parser.PASParser;
 
-import types.UnifyRules;
 
 public class Main {
 
