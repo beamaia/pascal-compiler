@@ -156,6 +156,16 @@ public enum NodeKind {
             return "*";
         }
     },
+    MOD_NODE {
+        public String toString() {
+            return "mod";
+        }
+    },
+    DIV_NODE {
+        public String toString() {
+            return "div";
+        }
+    },
     
     /* TYPE CASTING */
     B2I_NODE { // Type conversion.
@@ -196,6 +206,12 @@ public enum NodeKind {
         }
 	},
 
+    NO_NODE {
+        public String toString() {
+            return "";
+        }
+    },
+
     END_NODE {
         public String toString() {
             return "end";
@@ -217,6 +233,25 @@ public enum NodeKind {
 	            return true;
 	        default:
 	            return false;
+        }
+    }
+
+    public static NodeKind getNodeKindArth(String op){
+        switch(op){
+            case "+":
+                return PLUS_NODE;
+            case "-":
+                return MINUS_NODE;
+            case "*":
+                return TIMES_NODE;
+            case "/":
+                return OVER_NODE;
+            case "div":
+                return DIV_NODE;
+            case "mod":
+                return MOD_NODE;
+            default:
+                return NO_NODE;
         }
     }
     

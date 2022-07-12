@@ -1,7 +1,13 @@
 ✔ Vars Sect @done 
 ✔ Func Sect @done (7/10/2022, 11:19:14 PM)
 ☐ Stmt Sect    
-    ☐ If Stmt
-    ☐ While Stmt
-    ☐ Assign Stmt
+    ☐ Arthimetics (em tese deve ser parecido a logical)
+    ☐ Logical (em tese deve ser parecido a arthmetics)
+    ☐ Unary not (deve dar pra fazer tranquilo)
+    ✔ Types
+    ✔ Unary minus
+    ☐ If Stmt (fazer isso)
+    ☐ While Stmt (priorizar um dos dois tipos de loop)
+    ✔ Assign Stmt
     ☐ For Stmt
+

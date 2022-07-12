@@ -16,22 +16,28 @@ public class AST {
     public final Type type;
     public final List<AST> children;
 
-    private AST(NodeKind kind, int intData, float floatData, Type type) {
+    private static int nr;
+    public VarTable varTable;
+    public static FuncTable functionTable;
+    public static StrTable stringTable;
+
+    private AST(NodeKind kind, int intData, float floatData, Type type, VarTable varTable) {
         this.kind = kind;
         this.intData = intData;
         this.floatData = floatData;
         this.type = type;
         this.children = new ArrayList<AST>();
+        this.varTable = varTable;
     }
 
     // Quando eh inicializado um no de valor inteiro ou bool (ele usa 1 pra true e 0 pra false)
-    public AST(NodeKind kind, int intData, Type type) {
-        this(kind, intData, 0.0f, type);
+    public AST(NodeKind kind, int intData, Type type, VarTable varTable) {
+        this(kind, intData, 0.0f, type, varTable);
     }
     
     // Quando eh inicializado um no de valor real
-    public AST(NodeKind kind, float floatData, Type type) {
-        this(kind, 0, floatData, type);
+    public AST(NodeKind kind, float floatData, Type type, VarTable varTable) {
+        this(kind, 0, floatData, type, varTable);
     }
 
     public void addChild(AST child) {
@@ -49,18 +55,13 @@ public class AST {
         }
     }
 
-    public static AST newSubtree(NodeKind kind, Type type, AST... children) {
-        AST node = new AST(kind, 0, type);
+    public static AST newSubtree(NodeKind kind, Type type, VarTable varTable, AST... children) {
+        AST node = new AST(kind, 0, type, varTable);
         for (AST child : children) {
             node.addChild(child);
         }
         return node;
     }
-
-    private static int nr;
-    public VarTable varTable;
-    public static FuncTable functionTable;
-    public static StrTable stringTable;
 
     public int printNodeDot() {
 		int myNr = nr++;

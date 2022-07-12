@@ -11,8 +11,9 @@ BEGIN
     x := -34.55;    { valid real number assigned to variable x }
     x := 56;   { valid real number assigned to variable x }
     WRITELN(x);     { x contains the value -3.9E-3 }
+    id:=2;
     i := 10;        { valid integer number assigned to variable i }
-    i := i * i * i;     { valid (!) - i will be 1000 now }
+    i := id * i + i / i;     { valid (!) - i will be 1000 now }
     i := 9933;      { valid integer number assigned to variable i }
     i := -99999;    { invalid integer - too small }
     i := 999.44;    { invalid assignment - types do not match }

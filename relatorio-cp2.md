@@ -23,11 +23,14 @@ Fonte
 http://ctp.mkprog.com/en/pascal/menu/operators/
 
 Consideramos a seguintes possiveis operacoes aritmeticas:
+
 - +,-,/,*: Apenas inteiro com inteiro, inteiro com real e real com real
 - div: Apenas inteiro com inteiro
-- op logicos:  
+- op logicos:
 
 Retiramos o switch case
 Retiramos o type
 Simplificamos para aceitar apenas arrays (n pode matrizes de dimensoes maiores que 1)
 Não consideramos arrays como tipo de retorno de função, nem assign de arrays, por exemplo, A e B são arrays, B := A (teria que verificar se são arrays e se tem o mesmo tamanho).
+
+Não consideramos precedência de operadores (ainda)
