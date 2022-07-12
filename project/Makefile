@@ -4,7 +4,7 @@ JAVA=java
 JAVAC=javac
 
 # Eu uso ROOT como o diretório raiz para os meus labs.
-ROOT=/project
+ROOT=/home-temp/aluno/Downloads/pascal-compiler-CP2/project
 
 ANTLR_PATH=$(ROOT)/antlr-4.10.1-complete.jar
 CLASS_PATH_OPTION=-cp .:$(ANTLR_PATH)
@@ -17,7 +17,7 @@ GRUN=$(JAVA) $(CLASS_PATH_OPTION) org.antlr.v4.gui.TestRig
 GEN_PATH=lexer
 
 # Diretório para os casos de teste
-IN=/in
+IN=/home-temp/aluno/Downloads/pascal-compiler-CP2/in
 
 # Diretório aonde está a classe com a função main.
 MAIN_PATH=checker
@@ -26,7 +26,7 @@ MAIN_PATH=checker
 BIN_PATH=bin
 
 # Modificador para o teste de um arquivo só.
-FILE=$(IN)/ex32-oplogic-sem.pas
+FILE=$(IN)/ex02-assign-types.pas
 
 all: antlr javac
 	@echo "Done."
