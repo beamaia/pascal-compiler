@@ -144,7 +144,6 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
         @param ctx Contexto de declaracao de funcoes e procedures.
     */
     public AST visitFnc_and_procedures_sect(Fnc_and_procedures_sectContext ctx) {
-        System.out.println("Visiting fnc_and_procedures_sect " + ctx.getChildCount());
         funcRoot = AST.newSubtree(FUNC_LIST_NODE, NO_TYPE, variableTable);
         visit(ctx.opt_fnc_and_procedures_sect());
 
@@ -200,7 +199,7 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
         // Variavavel com esse nome ja declarada
         if (variableTable.contains(funcName)) {
             System.out.println("Erro: there is already a variable with " + funcName + " name!");
-            passed = false; // 
+            passed = false; 
             return new AST(FUNC_DECL_NODE, -1, NO_TYPE, variableTable);
         } else if  (functionTable.getFunc(funcName) != null) {
             // funcao ja declarada
@@ -310,7 +309,6 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
         @param ctx Contexto de secao de vars da declaracao de funcoes.
      */
     public AST visitFunc_vars_sect(Func_vars_sectContext ctx) {
-        System.out.println( "FUNÇÃO:   " +  ctx.getText());
 		if (ctx.getChildCount() > 0) {
 	    	visit(ctx.func_opt_var_decl());
 		}
@@ -357,9 +355,7 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
             idx = functionTable.addVarToFunc(lastFuncVisited, entry);
 
             AST node = new AST(VAR_DECL_NODE, idx, lastDeclType, variableTable);
-            System.out.println("Added variable " + id + " to function " + lastFuncVisited);
             node.varTable = functionTable.getVarTable(lastFuncVisited);
-            System.out.println(node.varTable);
             funcVarsRoot.addChild(node);
             return node; 
         }
@@ -443,7 +439,6 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
             
             // TODO esta null
             if (child != null) {
-                System.out.println("child");
                 stmtTree.addChild(child);
             } 
             // stmtTree.addChild(child);
@@ -476,14 +471,12 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
 
     @Override
     public AST visitAssignStmtSimple(AssignStmtSimpleContext ctx) {
-        System.out.println("visitAssignStmtSimple");
         String varName = ctx.ID().getText();
         Type varType;
         AST exprNode;
 
         if(variableTable.contains(varName)){
             varType = variableTable.getType(variableTable.getEntryId(varName));
-            System.out.println("varType: " + varType + " varName: " + varName);
         } else if (lastEnteredScope == Scope.FUNCTION && functionTable.funcContainsVar(lastFuncVisited, varName)) {
             varType = functionTable.getFuncVar(lastFuncVisited, varName).type;
         }else {
@@ -505,26 +498,17 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
         AST assign = new AST(ASSIGN_NODE, 0, NO_TYPE, variableTable);
 
         
-
-
-
         if(exprNode != null){
-            System.out.println("varType: " + varType + " varName: " + varName + " idx: " + variableTable.getEntryId(varName));
             AST IdChild = new AST(VAR_USE_NODE, variableTable.getEntryId(varName), varType, variableTable);
-            System.out.println(ctx.getText());
-            IdChild.varTable = variableTable;
+
             assign.addChild(IdChild);
-            exprNode.varTable = variableTable;
             assign.addChild(exprNode);
-            assign.varTable = variableTable;
-            // assign.printNodeDot();
+
             stmtScopeRoot.addChild(assign);
         } else {
-            System.out.println("null expr");
-            System.out.println(ctx.getText() + "\n\n\n");
+            System.out.println("Null expr");
             return null;
         }
-
 
         return assign;
     }
@@ -590,45 +574,54 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
 		}
 
         AST expr = new AST(getNodeKindArth(ctx.op.getText()), 0, unif, variableTable);
+
         expr.varTable = variableTable;
         expr.addChild(l);
         expr.addChild(r);
 
-        expr.printNodeDot();
 		return expr;
 	}
 
-    // @Override
-    // public Type visitExprOpLogic(ExprOpLogicContext ctx) {
+    @Override
+    public AST visitExprOpLogic(ExprOpLogicContext ctx) {
 
-	// 	Type l = visit(ctx.left);
-	// 	Type r = visit(ctx.right);
+		AST l = visit(ctx.left);
+		AST r = visit(ctx.right);
 
-    //     if (l == NO_TYPE || r == NO_TYPE) {
-    //         return NO_TYPE;
-    //     }
+        if (l.type == NO_TYPE || r.type == NO_TYPE) {
+            typeError(ctx.op.getLine(), ctx.op.getText(), l.type, r.type);
+            passed = false;
+            return new AST(NO_NODE, -1, NO_TYPE, variableTable);
+        }
 
-    //     if (l == STRING_TYPE || r == STRING_TYPE) {
-    //         typeError(ctx.op.getLine(), ctx.op.getText(), l, r);
-    //         passed = false;
-    //         return NO_TYPE;
-    //     }
+        if (l.type == STRING_TYPE || r.type == STRING_TYPE) {
+            typeError(ctx.op.getLine(), ctx.op.getText(), l.type, r.type);
+            passed = false;
+            return new AST(NO_NODE, -1, NO_TYPE, variableTable);
+        }
 
-    //     Type unif = NO_TYPE;
-    //     int op = ctx.op.getType();
+        Type unif = NO_TYPE;
+        int op = ctx.op.getType();
 
-    //     if (op == PASParser.EQ || op == PASParser.NEQ || op == PASParser.LT || op == PASParser.LTE || op == PASParser.BT || op == PASParser.BTE || op == PASParser.AND || op == PASParser.OR) {
-    //         unif = l.unifyComp(r);
-    //     }
 
-    //     if (unif == NO_TYPE) {
-    //         typeError(ctx.op.getLine(), ctx.op.getText(), l, r);
-    //         passed = false;
-    //         return NO_TYPE;
-    //     }
+        if (op == PASParser.EQ || op == PASParser.NEQ || op == PASParser.LT || op == PASParser.LTE || op == PASParser.BT || op == PASParser.BTE || op == PASParser.AND || op == PASParser.OR) {
+            unif = l.type.unifyComp(r.type);
+        }
 
-    //     return unif;
-    // }
+
+        if (unif == NO_TYPE) {
+            typeError(ctx.op.getLine(), ctx.op.getText().toUpperCase(), l.type, r.type);
+            passed = false;
+            return new AST(NO_NODE, -1, NO_TYPE, variableTable);
+        }
+
+        AST expr = new AST(getNodeComp(ctx.op.getText().toUpperCase()), 0, unif, variableTable);
+
+        expr.addChild(l);
+        expr.addChild(r);
+
+        return expr;
+    }
 
     @Override
     public AST visitExprUnaryMinus(ExprUnaryMinusContext ctx) { 
@@ -645,18 +638,21 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
         }
     }
 
-    // @Override
-    // public Type visitExprUnaryNot(ExprUnaryNotContext ctx) {
-    //     Type expr = visit(ctx.expr());
+    @Override
+    public AST visitExprUnaryNot(ExprUnaryNotContext ctx) {
+        AST expr = visit(ctx.expr());
+        AST unaryNot = new AST(NOT_NODE, 0, NO_TYPE, variableTable);
+        unaryNot.addChild(expr);
         
-    //     if (expr == BOOL_TYPE) {
-    //         return expr;
-    //     } else {
-    //         System.out.println("Error: unary not can only be applied to bool");
-    //         passed = false;
-    //         return NO_TYPE;
-    //     }
-    // }
+        
+        if (lastDeclType == BOOL_TYPE) {
+            return unaryNot;
+        } else {
+            System.out.println("Error: unary not can only be applied to boolean types.");
+            passed = false;
+            return new AST(BOOL_VAL_NODE, -1, NO_TYPE, variableTable);
+        }
+    }
 
     // @Override
     // public Type visitExprDivMod(ExprDivModContext ctx) {
@@ -718,7 +714,6 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
             // Add to table
             EntryStr entry = new EntryStr(id, line);
             int idx = stringTable.addStr(entry);
-            System.out.println(idx);
             return new AST(CHAR_VAL_NODE, idx, CHAR_TYPE, variableTable);
         }
     }
@@ -805,7 +800,6 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
             // Add to table
             EntryStr entry = new EntryStr(id, line);
             int idx = stringTable.addStr(entry);
-            System.out.println(idx);
             return new AST(STR_VAL_NODE, idx, STRING_TYPE, variableTable);
         }
 	}

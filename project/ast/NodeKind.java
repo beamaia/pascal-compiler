@@ -42,6 +42,21 @@ public enum NodeKind {
             return "<>";
         }
     },
+    NOT_NODE {
+        public String toString() {
+            return "not";
+        }
+    },
+    AND_NODE {
+        public String toString() {
+            return "and";
+        }
+    },
+    OR_NODE {
+        public String toString() {
+            return "or";
+        }
+    },
 
     /* BLOCK */
     BLOCK_NODE {
@@ -250,6 +265,29 @@ public enum NodeKind {
                 return DIV_NODE;
             case "mod":
                 return MOD_NODE;
+            default:
+                return NO_NODE;
+        }
+    }
+
+    public static NodeKind getNodeComp(String op){
+        switch(op){
+            case "=":
+                return EQ_NODE;
+            case "<":
+                return LT_NODE;
+            case ">":
+                return GT_NODE;
+            case "<=":
+                return LE_NODE;
+            case ">=":
+                return GE_NODE;
+            case "<>":
+                return NEQ_NODE;
+            case "AND":
+                return AND_NODE;
+            case "OR":
+                return OR_NODE;
             default:
                 return NO_NODE;
         }

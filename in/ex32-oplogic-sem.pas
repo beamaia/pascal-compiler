@@ -13,4 +13,5 @@ begin
     c := a <= b;
     c := a <> b;
     c := a = b;
+    c := not c;
 end.
