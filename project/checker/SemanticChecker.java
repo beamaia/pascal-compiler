@@ -703,34 +703,46 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
         }
     }
 
-    // @Override
-    // public Type visitExprDivMod(ExprDivModContext ctx) {
-    //     Type l = visit(ctx.left);
-	// 	Type r = visit(ctx.right);
+    @Override
+    public AST visitExprDivMod(ExprDivModContext ctx) {
+        AST l = visit(ctx.left);
+		AST r = visit(ctx.right);
 
-    //     if (l == NO_TYPE || r == NO_TYPE) {
-    //         return NO_TYPE;
-    //     }
+        if (l.type == NO_TYPE || r.type == NO_TYPE) {
+            System.out.println("Error: values cannot be null");
+            System.exit(1);
+            return null;
+        }
 
-    //     if (l == STRING_TYPE || r == STRING_TYPE) {
-    //         typeError(ctx.op.getLine(), ctx.op.getText(), l, r);
-    //         System.exit);
-    //     }
+        if (l.type == STRING_TYPE || r.type == STRING_TYPE) {
+            typeError(ctx.op.getLine(), ctx.op.getText(), l.type, r.type);
+            System.exit(1);
+            return null;
+        }
 
-    //     Type unif = NO_TYPE;
-    //     int op = ctx.op.getType();
+        Unif unif = null;
+        int op = ctx.op.getType();
 
-    //     if (op == PASParser.DIV || op == PASParser.MOD) {
-    //         unif = l.unifyIntDiv(r);
-    //     }
+        if (op == PASParser.DIV || op == PASParser.MOD) {
+            unif = l.type.unifyIntDiv(r.type);
+        }
 
-    //     if (unif == NO_TYPE) {
-    //         typeError(ctx.op.getLine(), ctx.op.getText(), l, r);
-    //         System.exit);
-    //     }
+        if (unif.type == NO_TYPE) {
+            typeError(ctx.op.getLine(), ctx.op.getText(), l.type, r.type);
+            System.exit(1);
+            return null;
+        }
 
-    //     return unif;
-    // }
+        AST expr = new AST(getNodeKindArth(ctx.op.getText().toUpperCase()), 0, unif.type, variableTable);
+        
+        l = Conv.createConvNode(unif.lc, l, variableTable);
+		r = Conv.createConvNode(unif.rc, r, variableTable);
+
+        expr.addChild(l);
+        expr.addChild(r);
+
+        return expr;
+    }
 
     @Override
     public AST visitExprIntVal(ExprIntValContext ctx) {

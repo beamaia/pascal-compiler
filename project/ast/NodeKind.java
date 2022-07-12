@@ -261,9 +261,9 @@ public enum NodeKind {
                 return TIMES_NODE;
             case "/":
                 return OVER_NODE;
-            case "div":
+            case "DIV":
                 return DIV_NODE;
-            case "mod":
+            case "MOD":
                 return MOD_NODE;
             default:
                 return NO_NODE;
