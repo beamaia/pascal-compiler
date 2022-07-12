@@ -42,9 +42,7 @@ public class AST {
 
     public void addChild(AST child) {
         // check if intData child is -1 (it means that it is a list)
-        if (child.intData != -1) {
-            this.children.add(child);
-        }
+        this.children.add(child);
     }
 
     public AST getChild(int idx) {
