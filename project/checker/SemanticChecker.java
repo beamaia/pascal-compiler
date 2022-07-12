@@ -6,6 +6,9 @@ import static ast.NodeKind.*;
 import types.Type;
 import static types.Type.*;
 
+import types.Conv;
+import types.Conv.*;
+
 import org.antlr.v4.runtime.Token;
 
 import parser.PASParser;
@@ -487,9 +490,10 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
         
         exprNode = visit(ctx.expr());
         
-        Type unif = varType.unifyAttrib(lastDeclType);
+        Unif unif = varType.unifyAttrib(lastDeclType);
 
-        if(unif == NO_TYPE){
+
+        if(unif.type == NO_TYPE){
             System.out.println("Error: expression type doesn't match variable type. Variable " + varName + " is of type " + varType + "while expression is "+lastDeclType+".\n");
             passed = false;
             return new AST(ASSIGN_NODE, -1, NO_TYPE, variableTable);
@@ -500,6 +504,9 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
         
         if(exprNode != null){
             AST IdChild = new AST(VAR_USE_NODE, variableTable.getEntryId(varName), varType, variableTable);
+
+            IdChild = Conv.createConvNode(unif.lc, IdChild, variableTable);
+		    exprNode = Conv.createConvNode(unif.rc, exprNode, variableTable);
 
             assign.addChild(IdChild);
             assign.addChild(exprNode);
@@ -561,21 +568,26 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
             return new AST(NO_NODE, -1, NO_TYPE, variableTable);
         }
 
-		Type unif = NO_TYPE;
+		Unif unif = null;
+
         int op = ctx.op.getType();
 		if (op == PASParser.PLUS || op == PASParser.MINUS || op == PASParser.TIMES || op == PASParser.OVER) {
 			unif = l.type.unifyArith(r.type);
 		} 
 
-		if (unif == NO_TYPE) {
+		if (unif != null && unif.type == NO_TYPE) {
 			typeError(ctx.op.getLine(), ctx.op.getText(), l.type, r.type);
             passed = false;
             return new AST(NO_NODE, -1, NO_TYPE, variableTable);
 		}
 
-        AST expr = new AST(getNodeKindArth(ctx.op.getText()), 0, unif, variableTable);
+        AST expr = new AST(getNodeKindArth(ctx.op.getText()), 0, unif.type, variableTable);
 
         expr.varTable = variableTable;
+        
+        l = Conv.createConvNode(unif.lc, l, variableTable);
+		r = Conv.createConvNode(unif.rc, r, variableTable);
+
         expr.addChild(l);
         expr.addChild(r);
 
@@ -600,7 +612,7 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
             return new AST(NO_NODE, -1, NO_TYPE, variableTable);
         }
 
-        Type unif = NO_TYPE;
+        Unif unif = null;
         int op = ctx.op.getType();
 
 
@@ -609,13 +621,15 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
         }
 
 
-        if (unif == NO_TYPE) {
+        if (unif != null && unif.type == NO_TYPE) {
             typeError(ctx.op.getLine(), ctx.op.getText().toUpperCase(), l.type, r.type);
             passed = false;
             return new AST(NO_NODE, -1, NO_TYPE, variableTable);
         }
 
-        AST expr = new AST(getNodeComp(ctx.op.getText().toUpperCase()), 0, unif, variableTable);
+        AST expr = new AST(getNodeComp(ctx.op.getText().toUpperCase()), 0, unif.type, variableTable);
+        l = Conv.createConvNode(unif.lc, l, variableTable);
+        r = Conv.createConvNode(unif.rc, r, variableTable);
 
         expr.addChild(l);
         expr.addChild(r);
