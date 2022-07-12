@@ -171,14 +171,14 @@ array_index: expr;
 expr_list: expr_list COMMA expr
     | expr;
 expr: left=expr op=(LT | LTE | BT | BTE | EQ | NEQ | AND | OR) right=expr     # exprOpLogic
-    | MINUS expr       # exprUnaryMinus
-    | NOT expr         # exprUnaryNot
     | left=expr op=(PLUS | OVER | TIMES | MINUS) right=expr   # exprArithmetic
-    | left=expr op=(DIV | MOD) right=expr    # exprDivMod
-    | LPAR expr RPAR   # exprLparRpar
     | INT_VAL          # exprIntVal
     | REAL_VAL         # exprRealVal
     | CHAR_VAL         # exprCharVal
+    | MINUS expr       # exprUnaryMinus
+    | NOT expr         # exprUnaryNot
+    | left=expr op=(DIV | MOD) right=expr    # exprDivMod
+    | LPAR expr RPAR   # exprLparRpar
     | SQSTR            # exprStrVal
     | ID               # exprId
     | ID LSB array_index RSB  # exprArrayAccess
