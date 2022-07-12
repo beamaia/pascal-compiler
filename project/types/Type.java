@@ -1,6 +1,9 @@
 package types;
 
-import types.UnifyRules;
+import types.Conv.*;
+import static types.Conv.I2R;
+import static types.Conv.NONE;
+
 
 public enum Type {
     INT_TYPE {
@@ -34,19 +37,51 @@ public enum Type {
         }
     };
 
-    public Type unifyArith(Type that) {
-        return UnifyRules.arithmetics[this.ordinal()][that.ordinal()];
+    // tabela de unificação de tipos primitivos para o operador '+', '-', '*', '/'
+    public static Unif arithmetics[][] = {
+        { new Unif(INT_TYPE, NONE, NONE), new Unif(REAL_TYPE, I2R, NONE),  new Unif(NO_TYPE, NONE, NONE),   new Unif(NO_TYPE, NONE, NONE)}, // INT PARA OUTROS
+        { new Unif(REAL_TYPE, NONE, I2R), new Unif(REAL_TYPE, NONE, NONE), new Unif(NO_TYPE, NONE, NONE),   new Unif(NO_TYPE, NONE, NONE)}, // REAL PARA OUTROS
+        { new Unif(NO_TYPE, NONE, NONE),  new Unif(NO_TYPE, NONE, NONE),   new Unif(BOOL_TYPE, NONE, NONE), new Unif(NO_TYPE, NONE, NONE)}, // BOOLEAN PARA OUTROS
+		{ new Unif(NO_TYPE, NONE, NONE),  new Unif(NO_TYPE, NONE, NONE),   new Unif(NO_TYPE, NONE, NONE),   new Unif(CHAR_TYPE, NONE, NONE)}  // CHAR PARA OUTROS
+    };
+
+    // tabela de unificação do operador div
+    public static Unif int_div[][] = {
+        { new Unif(INT_TYPE, NONE, NONE), new Unif(NO_TYPE, NONE, NONE),  new Unif(NO_TYPE, NONE, NONE), new Unif(NO_TYPE, NONE, NONE)}, // INT PARA OUTROS
+        { new Unif(NO_TYPE, NONE, NONE),  new Unif(NO_TYPE, NONE, NONE),  new Unif(NO_TYPE, NONE, NONE), new Unif(NO_TYPE, NONE, NONE)}, // REAL PARA OUTROS
+        { new Unif(NO_TYPE, NONE, NONE),  new Unif(NO_TYPE, NONE, NONE),  new Unif(NO_TYPE, NONE, NONE), new Unif(NO_TYPE, NONE, NONE)}, // BOOLEAN PARA OUTROS
+		{ new Unif(NO_TYPE, NONE, NONE),  new Unif(NO_TYPE, NONE, NONE),  new Unif(NO_TYPE, NONE, NONE), new Unif(NO_TYPE, NONE, NONE)}  // CHAR PARA OUTROS
+    };
+
+    // tabela de unificação de tipos primitivos para o operador '=', '<>', '<', '>', '<=', '>='
+    public static Unif comp[][] = {
+ 		{ new Unif(BOOL_TYPE, NONE, NONE), new Unif(BOOL_TYPE, I2R, NONE),  new Unif(NO_TYPE, NONE, NONE),   new Unif(NO_TYPE, NONE, NONE)   }, // INT PARA OUTROS
+		{ new Unif(BOOL_TYPE, NONE, I2R),  new Unif(BOOL_TYPE, NONE, NONE), new Unif(NO_TYPE, NONE, NONE),   new Unif(NO_TYPE, NONE, NONE)   }, // REAL PARA OUTROS
+		{ new Unif(NO_TYPE, NONE, NONE),   new Unif(NO_TYPE, NONE, NONE),   new Unif(BOOL_TYPE, NONE, NONE), new Unif(NO_TYPE, NONE, NONE)   }, // BOOLEAN PARA OUTROS
+		{ new Unif(NO_TYPE, NONE, NONE),   new Unif(NO_TYPE, NONE, NONE),   new Unif(NO_TYPE, NONE, NONE),   new Unif(BOOL_TYPE, NONE, NONE) }  // CHAR PARA OUTROS
+    };
+
+    // tabela de unificacoa de tipos primitivos para verificacao de widening
+    public static Unif attrib[][] = {
+        { new Unif(INT_TYPE, NONE, NONE), new Unif(REAL_TYPE, I2R, NONE),  new Unif(NO_TYPE, NONE, NONE),   new Unif(NO_TYPE, NONE, NONE)}, // INT PARA OUTROS
+        { new Unif(REAL_TYPE, NONE, I2R), new Unif(REAL_TYPE, NONE, NONE), new Unif(NO_TYPE, NONE, NONE),   new Unif(NO_TYPE, NONE, NONE)}, // REAL PARA OUTROS
+        { new Unif(NO_TYPE, NONE, NONE),  new Unif(NO_TYPE, NONE, NONE),   new Unif(BOOL_TYPE, NONE, NONE), new Unif(NO_TYPE, NONE, NONE)}, // BOOLEAN PARA OUTROS
+		{ new Unif(NO_TYPE, NONE, NONE),  new Unif(NO_TYPE, NONE, NONE),   new Unif(NO_TYPE, NONE, NONE),   new Unif(CHAR_TYPE, NONE, NONE)}  // CHAR PARA OUTROS
+    };
+
+    public Unif unifyArith(Type that) {
+        return arithmetics[this.ordinal()][that.ordinal()];
     }
     
-    public Type unifyIntDiv(Type that) {
-        return UnifyRules.int_div[this.ordinal()][that.ordinal()];
+    public Unif unifyIntDiv(Type that) {
+        return int_div[this.ordinal()][that.ordinal()];
     }
     
-    public Type unifyComp(Type that) {
-        return UnifyRules.comp[this.ordinal()][that.ordinal()];
+    public Unif unifyComp(Type that) {
+        return comp[this.ordinal()][that.ordinal()];
     }
 
-    public Type unifyAttrib(Type that) {
-        return UnifyRules.attrib[this.ordinal()][that.ordinal()];
+    public Unif unifyAttrib(Type that) {
+        return attrib[this.ordinal()][that.ordinal()];
     }
 }
