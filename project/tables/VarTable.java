@@ -45,8 +45,8 @@ public class VarTable{
 
     public int getEntryId(String name) {
         for(int i = 0; i < table.size(); i++) {
-            EntryInput entry = this.getEntry(name);
-            if(entry != null) {
+            EntryInput entry = this.table.get(i);
+            if(entry.name.equals(name)) {
                 return i;
             }
         }

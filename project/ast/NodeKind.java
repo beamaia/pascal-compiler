@@ -84,6 +84,11 @@ public enum NodeKind {
             return "";
         }
     },
+    CHAR_VAL_NODE {
+        public String toString() {
+            return "";
+        }
+    },
     STR_VAL_NODE {
         public String toString() {
             return "";
@@ -189,13 +194,21 @@ public enum NodeKind {
 		public String toString() {
             return "Type";
         }
-	};
+	},
+
+    END_NODE {
+        public String toString() {
+            return "end";
+        }
+    };
 
     public static boolean hasData(NodeKind kind) {
         switch(kind) {
+            case TYPE_NODE:
             case BOOL_VAL_NODE:
 	        case INT_VAL_NODE:
 	        case REAL_VAL_NODE:
+            case CHAR_VAL_NODE:
 	        case STR_VAL_NODE:
 	        case VAR_DECL_NODE:
 	        case VAR_USE_NODE:

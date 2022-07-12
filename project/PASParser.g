@@ -14,7 +14,8 @@ options {
 // PARSER
 // ===================================================
 
-program: PROGRAM ID SEMI vars_sect fnc_and_procedures_sect stmt_sect DOT;
+program: PROGRAM ID SEMI vars_sect fnc_and_procedures_sect stmt_sect end;
+end: DOT;
 
 // Aceita functions e procedures em qualquer ordem
 fnc_and_procedures_sect: opt_fnc_and_procedures_sect;

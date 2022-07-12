@@ -9,13 +9,14 @@ VAR
    id,x,y: INTEGER;
 BEGIN
     x := -34.55;    { valid real number assigned to variable x }
-    x := -3.9E-3;   { valid real number assigned to variable x }
+    x := 56;   { valid real number assigned to variable x }
     WRITELN(x);     { x contains the value -3.9E-3 }
     i := 10;        { valid integer number assigned to variable i }
-    i := i * i;     { valid (!) - i will be 100 now }
+    i := i * i * i;     { valid (!) - i will be 1000 now }
     i := 9933;      { valid integer number assigned to variable i }
     i := -99999;    { invalid integer - too small }
     i := 999.44;    { invalid assignment - types do not match }
+    i := 'A';       { invalid assignment - types do not match }
     c := '1';       { valid character assigned to variable c }
     c := 1;         { invalid assignment - types do not match }
     c := 'Bert';    { invalid assignment - types do not match }

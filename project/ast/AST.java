@@ -60,7 +60,7 @@ public class AST {
     private static int nr;
     public VarTable varTable;
     public static FuncTable functionTable;
-    private static StrTable stringTable;
+    public static StrTable stringTable;
 
     public int printNodeDot() {
 		int myNr = nr++;
@@ -79,18 +79,13 @@ public class AST {
 	    if (NodeKind.hasData(this.kind)) {
 	        if (this.kind == NodeKind.REAL_VAL_NODE) {
 	        	System.err.printf("%.2f", this.floatData);
-	        } else if (this.kind == NodeKind.STR_VAL_NODE) {
+	        } else if (this.kind == NodeKind.STR_VAL_NODE || this.kind == NodeKind.CHAR_VAL_NODE) {
 	        	System.err.printf("@%d", this.intData);
 	        } else {
 	        	System.err.printf("%d", this.intData);
 	        }
 	    }
 	    System.err.printf("\"];\n");
-
-	    // for (int i = 0; i < this.children.size(); i++) {
-	    //     int childNr = this.children.get(i).printNodeDot();
-	    //     System.err.printf("node%d -> node%d;\n", myNr, childNr);
-	    // }
 
         for (AST child : this.children) {
             // todo kind tem to string né?

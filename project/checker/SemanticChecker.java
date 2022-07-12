@@ -10,55 +10,9 @@ import org.antlr.v4.runtime.Token;
 
 import parser.PASParser;
 import parser.PASParserBaseVisitor;
-
-import parser.PASParser.ProgramContext;
-import parser.PASParser.Vars_sectContext;
-import parser.PASParser.Var_decl_listContext;
 import parser.PASParser.*;
 
-import parser.PASParser.IntTypeContext;
-import parser.PASParser.RealTypeContext;
-import parser.PASParser.BoolTypeContext;
-import parser.PASParser.CharTypeContext;
-
-import parser.PASParser.Id_nodeContext;
-import parser.PASParser.ArrayTypeDeclContext;
-import parser.PASParser.Array_startContext;
-import parser.PASParser.Array_endContext;
-
-import parser.PASParser.ExprOpLogicContext;
-import parser.PASParser.ExprUnaryMinusContext;
-import parser.PASParser.ExprUnaryNotContext;
-import parser.PASParser.ExprArithmeticContext;
-import parser.PASParser.ExprDivModContext;
-import parser.PASParser.ExprLparRparContext;
-import parser.PASParser.ExprFncContext;
-import parser.PASParser.ExprIntValContext;
-import parser.PASParser.ExprRealValContext;
-import parser.PASParser.ExprCharValContext;
-import parser.PASParser.ExprStrValContext;
-import parser.PASParser.ExprIdContext;
-import parser.PASParser.ExprArrayAccessContext;
-
-import parser.PASParser.Var_declContext;
-
-import parser.PASParser.Fnc_and_procedures_sectContext;
-import parser.PASParser.Fnc_sign_declContext;
-import parser.PASParser.Fnc_sign_param_declContext;
-import parser.PASParser.Proc_func_id_nodeContext;
-import parser.PASParser.Procedures_declContext;
-
-import parser.PASParser.Assign_stmtContext;
-import parser.PASParser.AssignStmtSimpleContext;
-import parser.PASParser.AssignStmtArrayContext;
-
-import tables.EntryInput;
-import tables.EntryStr;
-import tables.EntryArray;
-import tables.EntryFunc;
-import tables.StrTable;
-import tables.VarTable;
-import tables.FuncTable;
+import tables.*;
 
 import checker.Scope;
 
@@ -72,6 +26,9 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
     AST varsRoot;
     AST funcRoot;
     AST funcVarsRoot;
+    AST stmtScopeRoot;
+
+    AST lastStmtUsed;
 
     private StrTable stringTable = new StrTable();
     private VarTable variableTable = new VarTable();
@@ -94,11 +51,11 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
     /*************************** DECLARACAO DE VARIAVEIS ***************************/
 
     /**
-    Visita secao de declaraca de variaveis. Inicializa a raiz de variaveis que sera 
-    adicionado as variaveis. Se tiver variaveis declaradas no contexto do filho,
-    visita-lo. Os filhos sao adicionados dentro do contexto de declaracao deles.
-    Adiciona a subarvore com declaracoes de variaveis a raiz.
-    @param ctx Contexto da secao de declaracao de variaveis.
+        Visita secao de declaraca de variaveis. Inicializa a raiz de variaveis que sera 
+        adicionado as variaveis. Se tiver variaveis declaradas no contexto do filho,
+        visita-lo. Os filhos sao adicionados dentro do contexto de declaracao deles.
+        Adiciona a subarvore com declaracoes de variaveis a raiz.
+        @param ctx Contexto da secao de declaracao de variaveis.
     */
     @Override
     public AST visitVars_sect(Vars_sectContext ctx) {	 
@@ -106,19 +63,19 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
 		if (ctx.getChildCount() > 0) {
 	    	visit(ctx.opt_var_decl());
             varsRoot.varTable = variableTable;
+            root.varTable = variableTable;
+            root.addChild(varsRoot);
 		}
 
-        root.varTable = variableTable;
-        root.addChild(varsRoot);
 		return varsRoot;
     }	    
 
 
     @Override
     /**
-    Visita contexto de declaracao de tipo para mudar o ultimo tipo visitado.
-    Visita o no de declaracao de variavel para adicionar variaveis a raiz de vars.
-    @param ctx Contexto de declaracao de variavel.
+        Visita contexto de declaracao de tipo para mudar o ultimo tipo visitado.
+        Visita o no de declaracao de variavel para adicionar variaveis a raiz de vars.
+        @param ctx Contexto de declaracao de variavel.
     */
     public AST visitVar_decl(Var_declContext ctx) {
 
@@ -135,8 +92,8 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
 
     @Override
     /**
-    Adiciona id para AST de variaveis.
-    @param ctx Contexto de id.
+        Adiciona id para AST de variaveis.
+        @param ctx Contexto de id.
     */
     public AST visitId_node(Id_nodeContext ctx) {
         String id = ctx.getText();
@@ -167,8 +124,8 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
 
     @Override
     /**
-    Visita contexto que atualiza o tamanho do array.
-    @param ctx Contexto de array.
+        Visita contexto que atualiza o tamanho do array.
+        @param ctx Contexto de array.
      */
     public AST visitArrayTypeDecl(ArrayTypeDeclContext ctx) {
         this.isArray = true;
@@ -181,31 +138,33 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
 
     @Override
     /**
-    Visita secao de declaracao de funcoes e procedures. Similar as variaveis, as funcoes
-    serao adicionadas dentro do contexto que ela é declarada. Os proximos contextos a serem 
-    visitados sao fnc_sign_decl_list e procedures_decl_list.
-    @param ctx Contexto de declaracao de funcoes e procedures.
+        Visita secao de declaracao de funcoes e procedures. Similar as variaveis, as funcoes
+        serao adicionadas dentro do contexto que ela é declarada. Os proximos contextos a serem 
+        visitados sao fnc_sign_decl_list e procedures_decl_list.
+        @param ctx Contexto de declaracao de funcoes e procedures.
     */
     public AST visitFnc_and_procedures_sect(Fnc_and_procedures_sectContext ctx) {
+        System.out.println("Visiting fnc_and_procedures_sect " + ctx.getChildCount());
         funcRoot = AST.newSubtree(FUNC_LIST_NODE, NO_TYPE);
         visit(ctx.opt_fnc_and_procedures_sect());
 
-        root.functionTable = functionTable;
-        root.addChild(funcRoot);
+        if (ctx.opt_fnc_and_procedures_sect().getChildCount() > 1) {
+            root.addChild(funcRoot);
+            root.functionTable = functionTable;
+        }
+
         return this.funcRoot;
     }
 
     @Override
     /**
-    Visita lista de declaracoes de funcoes e procedures. Verifica se cada contexto
-    existe antes de visita-lo. O retorno de cada visit nao eh utilizado, as funcoes
-    (procedures sao considerados como funcoes) sao adicionadas no contexto de
-    proc_func_id_node.
-    @param ctx Contexto de lista de declaracoes de funcoes e procedures.
+        Visita lista de declaracoes de funcoes e procedures. Verifica se cada contexto
+        existe antes de visita-lo. O retorno de cada visit nao eh utilizado, as funcoes
+        (procedures sao considerados como funcoes) sao adicionadas no contexto de
+        proc_func_id_node.
+        @param ctx Contexto de lista de declaracoes de funcoes e procedures.
      */
     public AST visitFnc_and_procedures(Fnc_and_proceduresContext ctx) {
-        funcVarsRoot = AST.newSubtree(VAR_LIST_NODE, NO_TYPE);
-
         if (ctx.fnc_sign_decl_list() != null) {
             visit(ctx.fnc_sign_decl_list());
         } 
@@ -219,15 +178,15 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
 
     @Override
     /**
-    Visita declaracao de funcao. Se ja existe uma variavel com o mesmo nome da funcao
-    ou se existe uma funcao ja declarada com o nome da funcao, ocorre erro. Caso contrario,
-    cria Entry de funcao, visita secao de parametros e corpo da funcao, e adiciona as 
-    variaveis locais ao Entry da funcao. Cada vez que visita uma declaracao de variavel,
-    seja por parametro ou uma secao var dentro de funcao, no contexto proc_func_id_node,
-    elas sao adicionadas a funcVarsRoot. No fim, eh criado um no AST de FUNC_DECL_NODE
-    e eh adicionado a funcRoot. A tabela de varTables tambem eh atualizada, para que no
-    printDot, seja possivel mostrar as variaveis da funcao.
-    @param ctx Contexto de declaracao de funcao.
+        Visita declaracao de funcao. Se ja existe uma variavel com o mesmo nome da funcao
+        ou se existe uma funcao ja declarada com o nome da funcao, ocorre erro. Caso contrario,
+        cria Entry de funcao, visita secao de parametros e corpo da funcao, e adiciona as 
+        variaveis locais ao Entry da funcao. Cada vez que visita uma declaracao de variavel,
+        seja por parametro ou uma secao var dentro de funcao, no contexto proc_func_id_node,
+        elas sao adicionadas a funcVarsRoot. No fim, eh criado um no AST de FUNC_DECL_NODE
+        e eh adicionado a funcRoot. A tabela de varTables tambem eh atualizada, para que no
+        printDot, seja possivel mostrar as variaveis da funcao.
+        @param ctx Contexto de declaracao de funcao.
      */
     public AST visitFnc_sign_decl(Fnc_sign_declContext ctx) {
         AST func;
@@ -256,6 +215,8 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
             int idx = functionTable.addFunc(newFunc);
             func = new AST(FUNC_DECL_NODE, idx, lastDeclType);
 
+            funcVarsRoot = AST.newSubtree(VAR_LIST_NODE, NO_TYPE);
+
             // Visita parametros para adicionar a lista de simbolos da funcao
             if (ctx.fnc_sign_params_sect().getChildCount() > 0) {
                 visit(ctx.fnc_sign_params_sect());
@@ -266,8 +227,10 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
                visit(ctx.func_vars_sect());
             }
 
-            func.addChild(funcVarsRoot);
-            func.varTable = functionTable.getVarTable(idx);
+            if (funcVarsRoot.children.size() > 0) {
+                func.addChild(funcVarsRoot);
+                func.varTable = functionTable.getVarTable(idx);
+            }
         }
 
         funcRoot.addChild(func);
@@ -277,8 +240,8 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
 
     @Override
     /** 
-    Visita declaracao de procedures. Tem o mesmo comportamento que declaracao de funcao.
-    @param ctx Contexto de declaracao de procedures.
+        Visita declaracao de procedures. Tem o mesmo comportamento que declaracao de funcao.
+        @param ctx Contexto de declaracao de procedures.
      */
     public AST visitProcedures_decl(Procedures_declContext ctx) {
         this.lastEnteredScope = Scope.FUNCTION;
@@ -303,14 +266,17 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
             int idx = functionTable.addFunc(newProc);
 
             func = new AST(FUNC_DECL_NODE, idx, lastDeclType);
+            funcVarsRoot = AST.newSubtree(VAR_LIST_NODE, NO_TYPE);
+
             // Visita parametros para adicionar a lista de simbolos da funcao
             if (ctx.procedure_params_sect() != null) {
                 visit(ctx.procedure_params_sect());
             }
 
-            System.out.println(funcVarsRoot);
-            func.addChild(funcVarsRoot);
-            func.varTable = functionTable.getVarTable(idx);
+            if (funcVarsRoot.children.size() > 0) {
+                func.addChild(funcVarsRoot);
+                func.varTable = functionTable.getVarTable(idx);
+            }
         }
 
         funcRoot.addChild(func);
@@ -320,10 +286,10 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
 
     @Override
     /**
-    Visita secao de parametros da declaracao de func/procedure. Visita type_spec 
-    para atualizar o ultimo tipo visitado e a lista de ids para adicionar a 
-    funcVarsRoot. O retorno nao eh utilizado no programa.
-    @param ctx Contexto de secao de parametros da declaracao de func/procedure.
+        Visita secao de parametros da declaracao de func/procedure. Visita type_spec 
+        para atualizar o ultimo tipo visitado e a lista de ids para adicionar a 
+        funcVarsRoot. O retorno nao eh utilizado no programa.
+        @param ctx Contexto de secao de parametros da declaracao de func/procedure.
      */
     public AST visitFnc_sign_param_decl(Fnc_sign_param_declContext ctx) {
         
@@ -340,10 +306,11 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
 
     @Override 
     /**
-    Visita secao de vars declaracao de funcoes.
-    @param ctx Contexto de secao de vars da declaracao de funcoes.
+        Visita secao de vars declaracao de funcoes.
+        @param ctx Contexto de secao de vars da declaracao de funcoes.
      */
     public AST visitFunc_vars_sect(Func_vars_sectContext ctx) {
+        System.out.println( "FUNÇÃO:   " +  ctx.getText());
 		if (ctx.getChildCount() > 0) {
 	    	visit(ctx.func_opt_var_decl());
 		}
@@ -354,13 +321,13 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
 
     @Override
     /**
-    Visita declaracao de var de funcoes/procedures. Se a variavel ja foi declarada,
-    seja globalmente ou localmente, retorna uma AST com intData = -1 e atualiza o 
-    atributo passed para false, indicando que houve erro. Um no AST eh criado para
-    variavel. Ela eh adicionara a variavel da funcao, utilizando lastFuncVisited 
-    para encontra varTable da funcao. Eh atualizado a varTable da AST com a varTable
-    da funcao. O no AST eh adicionado a funcVarsRoot. O retorno nao eh utilizado.
-    @param ctx Contexto de declaracao de var de funcoes/procedures. 
+        Visita declaracao de var de funcoes/procedures. Se a variavel ja foi declarada,
+        seja globalmente ou localmente, retorna uma AST com intData = -1 e atualiza o 
+        atributo passed para false, indicando que houve erro. Um no AST eh criado para
+        variavel. Ela eh adicionara a variavel da funcao, utilizando lastFuncVisited 
+        para encontra varTable da funcao. Eh atualizado a varTable da AST com a varTable
+        da funcao. O no AST eh adicionado a funcVarsRoot. O retorno nao eh utilizado.
+        @param ctx Contexto de declaracao de var de funcoes/procedures. 
      */
     public AST visitProc_func_id_node(Proc_func_id_nodeContext ctx) {
         String id = ctx.getText();
@@ -380,16 +347,19 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
             // Add to function table
             EntryInput entry;
             int idx;
-            if(isArray){
+
+            if (isArray) {
                 entry = new EntryArray(id, line, lastDeclType, start, end);
-            }else{
+            } else {
                 entry = new EntryInput(id, line, lastDeclType, false);
             }
 
             idx = functionTable.addVarToFunc(lastFuncVisited, entry);
 
             AST node = new AST(VAR_DECL_NODE, idx, lastDeclType);
+            System.out.println("Added variable " + id + " to function " + lastFuncVisited);
             node.varTable = functionTable.getVarTable(lastFuncVisited);
+            System.out.println(node.varTable);
             funcVarsRoot.addChild(node);
             return node; 
         }
@@ -400,8 +370,8 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
 
     @Override
     /**
-    Atualiza o lastDeclType para BOOL_TYPE.
-    @param ctx Contexto de tipo bool.
+        Atualiza o lastDeclType para BOOL_TYPE.
+        @param ctx Contexto de tipo bool.
      */
     public AST visitBoolType(BoolTypeContext ctx) {
         this.lastDeclType = BOOL_TYPE;
@@ -410,8 +380,8 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
 
     @Override
     /**
-    Atualiza o lastDeclType para INT_TYPE.
-    @param ctx Contexto de tipo inteiro.
+        Atualiza o lastDeclType para INT_TYPE.
+        @param ctx Contexto de tipo inteiro.
      */
     public AST visitIntType(IntTypeContext ctx) {
         this.lastDeclType = INT_TYPE;
@@ -420,8 +390,8 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
 
     @Override
     /**
-    Atualiza o lastDeclType para REAL_TYPE.
-    @param ctx Contexto de tipo real.
+        Atualiza o lastDeclType para REAL_TYPE.
+        @param ctx Contexto de tipo real.
      */
     public AST visitRealType(RealTypeContext ctx) {
         this.lastDeclType = REAL_TYPE;
@@ -430,8 +400,8 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
 
     @Override
     /**
-    Atualiza o lastDeclType para CHAR_TYPE.
-    @param ctx Contexto de tipo char.
+        Atualiza o lastDeclType para CHAR_TYPE.
+        @param ctx Contexto de tipo char.
      */
     public AST visitCharType(CharTypeContext ctx) {
         this.lastDeclType = CHAR_TYPE;
@@ -440,8 +410,8 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
 
     @Override
     /**
-    Atualiza o atributo start, indicando o inicio do intervalo de indices.
-    @param ctx Contexto de inicio de intervalo de indices.
+        Atualiza o atributo start, indicando o inicio do intervalo de indices.
+        @param ctx Contexto de inicio de intervalo de indices.
      */
     public AST visitArray_start(Array_startContext ctx) {
         this.start = Integer.parseInt(ctx.getText());
@@ -450,8 +420,8 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
 
     @Override
     /**
-    Atualiza o atributo start, indicando o final do intervalo de indices.
-    @param ctx Contexto de final de intervalo de indices.
+        Atualiza o atributo start, indicando o final do intervalo de indices.
+        @param ctx Contexto de final de intervalo de indices.
      */
     public AST visitArray_end(Array_endContext ctx) {
         this.end = Integer.parseInt(ctx.getText());
@@ -464,23 +434,32 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
     public AST visitStmt_sect(Stmt_sectContext ctx) {
         AST stmtTree = AST.newSubtree(STMT_LIST_NODE, NO_TYPE);
         AST child;
+        
+        this.stmtScopeRoot = stmtTree;
+
 
         if (ctx.getChildCount() > 0) {
             child = visit(ctx.stmt_list());
+            
             // TODO esta null
-            System.out.println("dad");
             if (child != null) {
+                System.out.println("child");
                 stmtTree.addChild(child);
-            }
+            } 
             // stmtTree.addChild(child);
         }
 
-        root.addChild(stmtTree);
+        stmtScopeRoot.varTable = variableTable;
+        // stmtScopeRoot.printNodeDot();
+
+        root.stringTable = stringTable;
+        root.addChild(this.stmtScopeRoot);
+
         return stmtTree;
     }
 
-    @Override
-    public AST visitStmt_list(Stmt_listContext ctx) {
+    //@Override
+    //public AST visitStmt_list(Stmt_listContext ctx) {
         // AST child;
         // if (ctx.getChildCount() > 0) {
         //     if (ctx.stmt() != null) {
@@ -493,7 +472,7 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
         //     }
         // } 
         // return stmtTree;
-    }
+    //}
 
     @Override
     public AST visitAssignStmtSimple(AssignStmtSimpleContext ctx) {
@@ -504,6 +483,7 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
 
         if(variableTable.contains(varName)){
             varType = variableTable.getType(variableTable.getEntryId(varName));
+            System.out.println("varType: " + varType + " varName: " + varName);
         } else if (lastEnteredScope == Scope.FUNCTION && functionTable.funcContainsVar(lastFuncVisited, varName)) {
             varType = functionTable.getFuncVar(lastFuncVisited, varName).type;
         }else {
@@ -524,12 +504,28 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
         
         AST assign = new AST(ASSIGN_NODE, 0, NO_TYPE);
 
+        
+
+
+
         if(exprNode != null){
+            System.out.println("varType: " + varType + " varName: " + varName + " idx: " + variableTable.getEntryId(varName));
+            AST IdChild = new AST(VAR_USE_NODE, variableTable.getEntryId(varName), varType);    
+            System.out.println(ctx.getText());
+            IdChild.varTable = variableTable;
+            assign.addChild(IdChild);
+            exprNode.varTable = variableTable;
             assign.addChild(exprNode);
+            assign.varTable = variableTable;
+            // assign.printNodeDot();
+            stmtScopeRoot.addChild(assign);
         } else {
             System.out.println("null expr");
             System.out.println(ctx.getText() + "\n\n\n");
+            return null;
         }
+
+
         return assign;
     }
 
@@ -625,18 +621,20 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
     //     return unif;
     // }
 
-    // @Override
-    // public Type visitExprUnaryMinus(ExprUnaryMinusContext ctx) {
+    @Override
+    public AST visitExprUnaryMinus(ExprUnaryMinusContext ctx) { 
+		AST expr = visit(ctx.expr());
+        AST unaryMinus = new AST(MINUS_NODE, 0, NO_TYPE);
+        unaryMinus.addChild(expr);
 
-	// 	Type expr = visit(ctx.expr());
-    //     if (expr == INT_TYPE || expr == REAL_TYPE) {
-    //         return expr;
-    //     } else {
-    //         System.out.println("Error: unary minus can only be applied to int or real");
-    //         passed = false;
-    //         return NO_TYPE;
-    //     }
-    // }
+        if (lastDeclType == INT_TYPE || lastDeclType == REAL_TYPE) {
+            return unaryMinus;
+        } else {
+            System.out.println("Error: unary minus can only be applied to int or real");
+            passed = false;
+            return new AST(INT_VAL_NODE, -1, NO_TYPE);
+        }
+    }
 
     // @Override
     // public Type visitExprUnaryNot(ExprUnaryNotContext ctx) {
@@ -686,14 +684,14 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
     public AST visitExprIntVal(ExprIntValContext ctx) {
         int value = Integer.parseInt(ctx.INT_VAL().getText());
         lastDeclType = INT_TYPE;
-        return new AST(TYPE_NODE, value, INT_TYPE);
+        return new AST(INT_VAL_NODE, value, INT_TYPE);
     }
 
     @Override
     public AST visitExprRealVal(ExprRealValContext ctx) {
         float value = Float.parseFloat(ctx.REAL_VAL().getText());
         lastDeclType = REAL_TYPE;
-        return new AST(TYPE_NODE, value, REAL_TYPE);
+        return new AST(REAL_VAL_NODE, value, REAL_TYPE);
     }
 
     @Override
@@ -703,10 +701,17 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
         String id = ctx.getText();
         int line = (ctx.getStart().getLine());
 
-        EntryStr entry = new EntryStr(id, line);
-        int idx = stringTable.addStr(entry);
-
-        return new AST(TYPE_NODE, idx, CHAR_TYPE);        
+        if (stringTable.contains(id)) {
+            System.out.println("Error: string " + id + " already declared");
+            passed = false;
+            return new AST(STR_VAL_NODE, -1, STRING_TYPE); 
+        } else {
+            // Add to table
+            EntryStr entry = new EntryStr(id, line);
+            int idx = stringTable.addStr(entry);
+            System.out.println(idx);
+            return new AST(CHAR_VAL_NODE, idx, CHAR_TYPE);
+        }
     }
 
     @Override
@@ -791,9 +796,16 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
             // Add to table
             EntryStr entry = new EntryStr(id, line);
             int idx = stringTable.addStr(entry);
+            System.out.println(idx);
             return new AST(STR_VAL_NODE, idx, STRING_TYPE);
         }
 	}
+
+    @Override
+    public AST visitEnd(EndContext ctx) {
+        this.root.stringTable = stringTable;
+        return new AST(END_NODE, 0, NO_TYPE);
+    }
 
     private void typeError(int lineNo, String op, Type t1, Type t2) {
     	System.out.printf("SEMANTIC ERROR (%d): incompatible types for operator '%s', LHS is '%s' and RHS is '%s'.\n",

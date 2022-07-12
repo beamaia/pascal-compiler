@@ -46,6 +46,11 @@ begin
    max := result;
 end;
 
+function five(): integer;
+begin
+   five := 5;
+end;
+
 begin
    writeln(' Enter three numbers: ');
    readln( a, b, c);

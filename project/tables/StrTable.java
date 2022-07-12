@@ -42,6 +42,9 @@ public class StrTable{
         return false;
     }
 
+    public String getText(int idx) {
+        return table.get(idx).name;
+    }
 
     public String toString() {
         StringBuilder sb = new StringBuilder();
