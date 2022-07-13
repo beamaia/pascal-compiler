@@ -31,6 +31,11 @@ public enum Type {
             return "no_type";
         }
 	},
+    IO_TYPE { // "Tipo" do writeln e readln
+        public String toString() {
+            return "io";
+        }
+    },
     STRING_TYPE {
         public String toString() {
             return "string";

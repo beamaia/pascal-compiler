@@ -33,8 +33,7 @@ public class FuncTable{
     }
 
     public EntryFunc getFunc(int idx) {
-        System.out.println("getFunc: " + idx);
-        if (table.size() > idx) {
+        if (table.size() > idx && idx >= 0) {
             return table.get(idx);
         }
 

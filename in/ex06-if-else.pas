@@ -53,7 +53,7 @@ begin
                 end;
             else
                 begin 
-                    writln('Number 2 is even');
+                    writeln('Number 2 is even');
                 end;
         end;
 end.

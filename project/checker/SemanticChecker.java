@@ -48,6 +48,10 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
     public SemanticChecker() {
         this.root = AST.newSubtree(PROGRAM_NODE, NO_TYPE, variableTable);
         this.stmtScopeRoot = this.root;
+        this.functionTable.addFunc(new EntryFunc("writeln", 0, IO_TYPE));
+        this.functionTable.addFunc(new EntryFunc("readln", 0, IO_TYPE));
+        root.functionTable = functionTable;
+
         // AST.printDot(this.root, variableTable);
     }	
 
@@ -824,44 +828,67 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
         }
     }
 
-    // @Override
-    // public AST visitFnc(FncContext ctx) {
-    //     String id = ctx.ID().getText();
-    //     int line = (ctx.getStart().getLine());
+    @Override
+    public AST visitFnc(FncContext ctx) {
+        String id = ctx.ID().getText();
+        int line = (ctx.getStart().getLine());
 
-    //     int idx = functionTable.getEntryId(id);
-    //     EntryFunc entry = null;
+
+        int idx = functionTable.getEntryId(id);
+        EntryFunc entry = functionTable.getFunc(idx);
+        AST func;
+
+
+
+        if (entry != null) {
+            func = new AST(FUNC_USE_NODE, idx, entry.type, variableTable);
+            this.stmtScopeRoot.addChild(func);
+            if (ctx.expr() != null){
+                AST funcChild = visit(ctx.expr());
+                func.addChild(funcChild);
+
+            }
+            if(ctx.expr_list()!=null){
+                AST oldScopeRoot = this.stmtScopeRoot;
+                this.stmtScopeRoot = func;
+                visit(ctx.expr_list());
+                this.stmtScopeRoot = oldScopeRoot;
+            }
+            return func;
+        } else {
+            System.out.println("Error: function " + id + " doesnt exist");
+            System.exit(1);
+            return null;
+        } 
+    }
+
+    @Override
+    public AST visitExpr_list(Expr_listContext ctx) {
+
+        if(ctx.expr_list() != null){
+            visit(ctx.expr_li st());
+        }
         
-    //     if (idx > 0) {
-    //         entry = functionTable.getFunc(idx);
-    //     }
+        AST child = visit(ctx.expr());
+        this.stmtScopeRoot.addChild(child);
 
-    //     System.out.println("idx: " + idx);
-    //     System.out.println("id: "+id+"\n\n");
+        return null;
+    }
 
-    //     if (id.toUpperCase().equals("WRITELN") || id.toUpperCase().equals("READLN")) {
-    //         return new AST(FUNC_USE_NODE, -1, NO_TYPE, variableTable);
-    //     } else if (entry == null) {
-    //         System.out.println("Error: function " + id + " doesnt exist");
-    //         System.exit(1);
-    //         return null;
-    //     } else {
-    //         return new AST(FUNC_USE_NODE, idx, entry.type, variableTable);
-    //     }
-    // }
-
-    // // TODO
+    // TODO
     // @Override
-    // public Type visitExprFnc(ExprFncContext ctx) {
+    // public AST visitExprFnc(ExprFncContext ctx) {
     //     // Pega o nome da função
-    //     AST node = visit(ctx.fnc());
+    //     System.out.println("visitExprFnc: " + ctx.getText());
+    //     //AST node = visit(ctx.fnc());
 
-    //     if (functionTable.containsKey(funID)) {
-    //         return functionTable.getFunc(funID).type;
-    //     } else {
-    //         System.out.println("Error: function " + funID + " not declared");
-    //         System.exit(1);
-    //     }
+    //     // if (functionTable.containsKey(funID)) {
+    //     //     return functionTable.getFunc(funID).type;
+    //     // } else {
+    //     //     System.out.println("Error: function " + funID + " not declared");
+    //     //     System.exit(1);
+    //     // }
+    //     return null;
     // }
 
     @Override
@@ -879,7 +906,7 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
             entry = new EntryStr(id, line);
             idx = stringTable.addStr(entry);
         }
-        return new AST(CHAR_VAL_NODE, idx, CHAR_TYPE, variableTable);
+        return new AST(STR_VAL_NODE, idx, STRING_TYPE, variableTable);
 	}
     
     @Override

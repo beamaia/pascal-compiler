@@ -168,8 +168,8 @@ fnc_stmt: fnc SEMI | ID LPAR fnc RPAR SEMI;
 array_index: expr;
 
 // Expressões
-expr_list: expr_list COMMA expr
-    | expr;
+expr_list:  expr
+    | expr_list COMMA expr;
 expr: left=expr op=(LT | LTE | BT | BTE | EQ | NEQ | AND | OR) right=expr     # exprOpLogic
     | left=expr op=(PLUS | OVER | TIMES | MINUS) right=expr   # exprArithmetic
     | INT_VAL          # exprIntVal
