@@ -59,9 +59,9 @@ public enum NodeKind {
     },
 
     /* BLOCK */
-    BLOCK_NODE {
+    WHILE_NODE {
         public String toString() {
-            return "block";
+            return "while";
         }
     },
     PROGRAM_NODE {
