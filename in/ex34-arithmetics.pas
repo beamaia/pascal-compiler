@@ -3,8 +3,9 @@ program exArithmetics;
 var
     a: integer;
     b, c: real;
+    d: Array[1..10] of integer;
 begin
-    a := 1;
+    a := -1;
     b := 3.14;
 
     c:= 1 + 3.14;
@@ -12,8 +13,8 @@ begin
     c:= 1 * 3.14;
     c:= 1 / 3.14;
 
-    c:= 'a' + 'b';
-    c:= 'aaaa' - 'aaaab';
+    {c:= 'a' + 'b';}
+    {c:= 'aaaa' - 'aaaab';}
 
     c := a + b;
     c := a * b;
@@ -30,8 +31,9 @@ begin
     c := b / b;
     c := b - b;
 
-    c:= a + 'b';
+    d[1] := 2;
+    a := a div a;
+    { c:= a + 'b';}
 
-    if a + c then
-        writeln('Number 1 is bigger');
+
 end.
