@@ -927,6 +927,65 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
         return whileNode;
     }
 
+    // @Override
+    public AST visitIf_stmt(If_stmtContext ctx) {
+        AST expr = visit(ctx.expr());
+        
+        if (expr.type != BOOL_TYPE) {
+            System.out.println("Error: if condition must be a boolean");
+            System.exit(1);
+            return null;
+        }
+        
+        AST ifNode = new AST(IF_NODE, 0, NO_TYPE, variableTable);
+        
+        AST oldScopeRoot = this.stmtScopeRoot;
+        
+        this.stmtScopeRoot = ifNode;
+        
+        if(expr != null) {
+            ifNode.addChild(expr);
+            AST stmt;
+            if (ctx.stmt_sect() != null) {
+                stmt  = visit(ctx.stmt_sect());
+            } else {
+                stmt = new AST(STMT_LIST_NODE, 0, NO_TYPE, variableTable);
+                this.stmtScopeRoot = stmt;
+                AST stmtChild = visit(ctx.stmt());
+                this.stmtScopeRoot = ifNode;
+                ifNode.addChild(stmt);
+            }
+            
+            oldScopeRoot.addChild(ifNode);
+
+            if (ctx.else_stmt() != null) {
+                AST elseRoot = new AST(ELSE_NODE, 0, NO_TYPE, variableTable);
+                this.stmtScopeRoot = elseRoot;
+                AST elseNode = visit(ctx.else_stmt());
+
+                // elseRoot.printNodeDot();
+
+                // if (elseNode == null) {
+                //     System.out.println("Error: else is null");
+                //     System.exit(1);
+                // }
+                
+                this.stmtScopeRoot = ifNode;
+                ifNode.addChild(elseRoot);
+            }
+            
+        } else {
+            System.out.println("Error: if condition is null");
+            System.exit(1);
+            return null;
+        }
+        
+        stmtScopeRoot.varTable = variableTable;
+        this.stmtScopeRoot = oldScopeRoot;
+        
+        return ifNode;
+    }
+    
     @Override
     public AST visitEnd(EndContext ctx) {
         this.root.stringTable = stringTable;
