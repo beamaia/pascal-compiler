@@ -755,17 +755,17 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
 
         String id = ctx.getText();
         int line = (ctx.getStart().getLine());
-
+        EntryStr entry;
+        int idx;
         if (stringTable.contains(id)) {
-            System.out.println("Error: string " + id + " already declared");
-            System.exit(1);
-            return null;
+            idx = stringTable.getEntryId(id);
+
         } else {
             // Add to table
-            EntryStr entry = new EntryStr(id, line);
-            int idx = stringTable.addStr(entry);
-            return new AST(CHAR_VAL_NODE, idx, CHAR_TYPE, variableTable);
+            entry = new EntryStr(id, line);
+            idx = stringTable.addStr(entry);
         }
+        return new AST(CHAR_VAL_NODE, idx, CHAR_TYPE, variableTable);
     }
 
     @Override
@@ -869,17 +869,17 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
 		// Adiciona a string na tabela de strings.
         String id = ctx.getText();
         int line = (ctx.getStart().getLine());
-
+        EntryStr entry;
+        int idx;
         if (stringTable.contains(id)) {
-            System.out.println("Error: string " + id + " already declared");
-            System.exit(1);
-            return null;
+            idx = stringTable.getEntryId(id);
+
         } else {
             // Add to table
-            EntryStr entry = new EntryStr(id, line);
-            int idx = stringTable.addStr(entry);
-            return new AST(STR_VAL_NODE, idx, STRING_TYPE, variableTable);
+            entry = new EntryStr(id, line);
+            idx = stringTable.addStr(entry);
         }
+        return new AST(CHAR_VAL_NODE, idx, CHAR_TYPE, variableTable);
 	}
     
     @Override
@@ -961,16 +961,20 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
             if (ctx.else_stmt() != null) {
                 AST elseRoot = new AST(ELSE_NODE, 0, NO_TYPE, variableTable);
                 this.stmtScopeRoot = elseRoot;
+                AST elseStmt;
+                // checa se o else é da forma simplificada (se for elseif ou else com begin/end não entra aqui) 
+                if(ctx.else_stmt().getChild(1).getChildCount() == 1) {
+                    elseStmt = new AST(STMT_LIST_NODE, 0, NO_TYPE, variableTable);
+                    //muda o último escopo global para o stmt_list do else simples
+                    this.stmtScopeRoot = elseStmt;   
+                    elseRoot.addChild(elseStmt);
+                }
+
                 AST elseNode = visit(ctx.else_stmt());
-
-                // elseRoot.printNodeDot();
-
-                // if (elseNode == null) {
-                //     System.out.println("Error: else is null");
-                //     System.exit(1);
-                // }
-                
+                                
+                //volta o escopo global para o escopo do if
                 this.stmtScopeRoot = ifNode;
+
                 ifNode.addChild(elseRoot);
             }
             
@@ -984,6 +988,11 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
         this.stmtScopeRoot = oldScopeRoot;
         
         return ifNode;
+    }
+
+    @Override
+    public AST visitExprLparRpar (ExprLparRparContext ctx) {
+        return visit(ctx.expr());
     }
     
     @Override
