@@ -32,6 +32,26 @@ public class FuncTable{
         return null;
     }
 
+    public EntryFunc getFunc(int idx) {
+        System.out.println("getFunc: " + idx);
+        if (table.size() > idx) {
+            return table.get(idx);
+        }
+
+        return null;
+    }
+
+    public int getEntryId(String name) {
+        for(int i = 0; i < table.size(); i++) {
+            EntryFunc entry = this.table.get(i);
+            if(entry.name.equals(name)) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
     public VarTable getVarTable(int idx) {
         return this.table.get(idx).variableTable;
     }
