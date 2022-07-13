@@ -437,24 +437,18 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
         AST oldScopeRoot = this.stmtScopeRoot;
 
         this.stmtScopeRoot = stmtTree;
-
-
+        
         if (ctx.getChildCount() > 0) {
             child = visit(ctx.stmt_list());
             
             // TODO esta null
-            if (child != null) {
-                stmtTree.addChild(child);
-            } 
+            // if (child != null) {
+            //     stmtTree.addChild(child);
+            // } 
             // stmtTree.addChild(child);
         }
 
-        stmtScopeRoot.varTable = variableTable;
-        // stmtScopeRoot.printNodeDot();
-
-        root.stringTable = stringTable;
-        root.addChild(this.stmtScopeRoot);
-
+        oldScopeRoot.addChild(this.stmtScopeRoot);
         this.stmtScopeRoot = oldScopeRoot;
 
         return stmtTree;
@@ -479,7 +473,6 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
     @Override
     public AST visitAssignStmtSimple(AssignStmtSimpleContext ctx) {
         String varName = ctx.ID().getText();
-        System.out.println(ctx.getText());
         Type varType;
         AST exprNode;
 
@@ -587,7 +580,6 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
 
         if (l == null || r == null) {
             System.out.println("Error: null expression");
-            System.out.println(ctx.getText());
             return null;
         }
 
@@ -650,11 +642,9 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
         Unif unif = null;
         int op = ctx.op.getType();
 
-
         if (op == PASParser.EQ || op == PASParser.NEQ || op == PASParser.LT || op == PASParser.LTE || op == PASParser.BT || op == PASParser.BTE || op == PASParser.AND || op == PASParser.OR) {
             unif = l.type.unifyComp(r.type);
         }
-
 
         if (unif != null && unif.type == NO_TYPE) {
             typeError(ctx.op.getLine(), ctx.op.getText().toUpperCase(), l.type, r.type);
@@ -746,7 +736,6 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
 
     @Override
     public AST visitExprIntVal(ExprIntValContext ctx) {
-        System.out.println(ctx.getText());
         int value = Integer.parseInt(ctx.INT_VAL().getText());
         System.out.println(value);
         lastDeclType = INT_TYPE;
@@ -835,17 +824,43 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
         }
     }
 
+    // @Override
+    // public AST visitFnc(FncContext ctx) {
+    //     String id = ctx.ID().getText();
+    //     int line = (ctx.getStart().getLine());
+
+    //     int idx = functionTable.getEntryId(id);
+    //     EntryFunc entry = null;
+        
+    //     if (idx > 0) {
+    //         entry = functionTable.getFunc(idx);
+    //     }
+
+    //     System.out.println("idx: " + idx);
+    //     System.out.println("id: "+id+"\n\n");
+
+    //     if (id.toUpperCase().equals("WRITELN") || id.toUpperCase().equals("READLN")) {
+    //         return new AST(FUNC_USE_NODE, -1, NO_TYPE, variableTable);
+    //     } else if (entry == null) {
+    //         System.out.println("Error: function " + id + " doesnt exist");
+    //         System.exit(1);
+    //         return null;
+    //     } else {
+    //         return new AST(FUNC_USE_NODE, idx, entry.type, variableTable);
+    //     }
+    // }
+
     // // TODO
     // @Override
     // public Type visitExprFnc(ExprFncContext ctx) {
     //     // Pega o nome da função
-    //     String funID = ctx.getChild(0).getChild(0).getText();
+    //     AST node = visit(ctx.fnc());
 
     //     if (functionTable.containsKey(funID)) {
     //         return functionTable.getFunc(funID).type;
     //     } else {
     //         System.out.println("Error: function " + funID + " not declared");
-    //         System.exit);
+    //         System.exit(1);
     //     }
     // }
 
@@ -869,7 +884,47 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
     
     @Override
     public AST visitWhile_stmt(While_stmtContext ctx) {
-        return null;
+        AST expr = visit(ctx.expr());
+        
+        if (expr.type != BOOL_TYPE) {
+            System.out.println("Error: while condition must be a boolean");
+            System.exit(1);
+            return null;
+        }
+
+
+        AST whileNode = new AST(WHILE_NODE, 0, NO_TYPE, variableTable);
+
+        AST oldScopeRoot = this.stmtScopeRoot;
+
+        this.stmtScopeRoot = whileNode;
+
+
+        if(expr != null) {
+            whileNode.addChild(expr);
+            AST stmt;
+            if (ctx.stmt_sect() != null) {
+                stmt  = visit(ctx.stmt_sect());
+            } else {
+                stmt = new AST(STMT_LIST_NODE, 0, NO_TYPE, variableTable);
+                this.stmtScopeRoot = stmt;
+                AST stmtChild = visit(ctx.stmt());
+                this.stmtScopeRoot = whileNode;
+                whileNode.addChild(stmt);
+            }
+            
+            oldScopeRoot.addChild(whileNode);
+            
+        } else {
+            System.out.println("Error: while condition is null");
+            System.exit(1);
+            return null;
+        }
+
+        stmtScopeRoot.varTable = variableTable;
+        this.stmtScopeRoot = oldScopeRoot;
+        
+        return whileNode;
     }
 
     @Override
