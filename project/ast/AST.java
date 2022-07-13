@@ -87,9 +87,10 @@ public class AST {
 	    System.err.printf("\"];\n");
 
         for (AST child : this.children) {
-            // todo kind tem to string né?
-            int childNr = child.printNodeDot();
-            System.err.printf("node%d -> node%d;\n", myNr, childNr);
+            if(child != null){
+                int childNr = child.printNodeDot();
+                System.err.printf("node%d -> node%d;\n", myNr, childNr);
+            }
         }
 	    return myNr;
 	}
