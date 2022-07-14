@@ -133,10 +133,10 @@ stmt: if_stmt
     | for_stmt;
 
 // If then else
-if_stmt: IF expr THEN stmt_sect SEMI        #ifThenStmt
-    | IF expr THEN stmt_sect SEMI else_stmt #ifThenElseStmt
-    | IF expr THEN stmt                     #inlineIfThenStmt
-    | IF expr THEN stmt else_stmt           #inlineIfThenElseStmt; 
+if_stmt: IF expr THEN stmt_sect SEMI        
+    | IF expr THEN stmt_sect SEMI else_stmt 
+    | IF expr THEN stmt                     
+    | IF expr THEN stmt else_stmt; 
 else_stmt: ELSE stmt_sect SEMI #elseStmt
     | ELSE stmt                #inlineElseStmt
     | ELSE if_stmt             #elseIfStmt;
@@ -168,17 +168,17 @@ fnc_stmt: fnc SEMI | ID LPAR fnc RPAR SEMI;
 array_index: expr;
 
 // Expressões
-expr_list: expr_list COMMA expr
-    | expr;
+expr_list:  expr
+    | expr_list COMMA expr;
 expr: left=expr op=(LT | LTE | BT | BTE | EQ | NEQ | AND | OR) right=expr     # exprOpLogic
-    | MINUS expr       # exprUnaryMinus
-    | NOT expr         # exprUnaryNot
     | left=expr op=(PLUS | OVER | TIMES | MINUS) right=expr   # exprArithmetic
-    | left=expr op=(DIV | MOD) right=expr    # exprDivMod
-    | LPAR expr RPAR   # exprLparRpar
     | INT_VAL          # exprIntVal
     | REAL_VAL         # exprRealVal
     | CHAR_VAL         # exprCharVal
+    | MINUS expr       # exprUnaryMinus
+    | NOT expr         # exprUnaryNot
+    | left=expr op=(DIV | MOD) right=expr    # exprDivMod
+    | LPAR expr RPAR   # exprLparRpar
     | SQSTR            # exprStrVal
     | ID               # exprId
     | ID LSB array_index RSB  # exprArrayAccess

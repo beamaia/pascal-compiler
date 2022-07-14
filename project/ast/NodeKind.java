@@ -59,9 +59,9 @@ public enum NodeKind {
     },
 
     /* BLOCK */
-    BLOCK_NODE {
+    WHILE_NODE {
         public String toString() {
-            return "block";
+            return "while";
         }
     },
     PROGRAM_NODE {
@@ -80,6 +80,11 @@ public enum NodeKind {
     IF_NODE {
         public String toString() {
             return "if";
+        }
+    },
+    ELSE_NODE {
+        public String toString() {
+            return "else";
         }
     },
     
@@ -132,6 +137,16 @@ public enum NodeKind {
     ARRAY_NODE {
         public String toString() {
             return "";
+        }
+    },
+    ARRAY_ELMT_NODE {
+        public String toString() {
+            return "array_elmt";
+        }
+    },
+    ARRAY_INDEX_NODE{
+        public String toString() {
+            return "array_index";
         }
     },
     FUNC_LIST_NODE {
@@ -261,9 +276,9 @@ public enum NodeKind {
                 return TIMES_NODE;
             case "/":
                 return OVER_NODE;
-            case "div":
+            case "DIV":
                 return DIV_NODE;
-            case "mod":
+            case "MOD":
                 return MOD_NODE;
             default:
                 return NO_NODE;

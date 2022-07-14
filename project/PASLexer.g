@@ -136,8 +136,8 @@ TWODOTS: '..'  ;
 
 // Valores inteiros, decimais e strings
 
-INT_VAL  : [0-9]+;
-REAL_VAL : [0-9]+ '.' [0-9]+ 
+INT_VAL  : '-'?[0-9]+;
+REAL_VAL : '-'?[0-9]+ '.' [0-9]+ 
     | [0-9]+ '.' [0-9] E MINUS [0-9]+;
 CHAR_VAL : '\'' [a-zA-Z] '\'';
 SQSTR : '\'' (~['"] )* '\'';

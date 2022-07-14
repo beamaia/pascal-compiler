@@ -4,9 +4,11 @@ import types.Type;
 import java.lang.StringBuilder;
 import java.util.Formatter;
 
+import tables.EntryInput;
+
 public class EntryFunc {
     public String name;
-    public VarTable variableTable = new VarTable();
+    public VarTable variableTable;
     public int line;
     public Type type;
 
@@ -20,6 +22,8 @@ public class EntryFunc {
         this.name = name;
         this.line = line;
         this.type = type;
+        variableTable = new VarTable();
+        this.variableTable.addVar(new EntryInput(name, line, type, false));
     }
 
     public int addVar(EntryInput entry) {

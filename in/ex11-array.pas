@@ -7,8 +7,20 @@ var
 
   I,J : Integer;  
   L: Real;
-begin  
-   For I:=0 to 7 do  
+begin
+   I := 0;
+   A[1] := B[I+1];
+   A[2] := 2;
+   A[3] := 3;
+   while  I < 20  do
+   
+      begin
+         A[I] := I;
+         I := I + 1;
+
+      end;
+
+ {  For I:=0 to 7 do  
       For J:=0 to 7 do  
          A[I] := A[I]*A[J];  
    For I:=0 to 9 do  
@@ -26,5 +38,5 @@ begin
       For J:=0 to 5 do  
          Writeln(B[L]);  
       Writeln;  
-      end;  
+      end;  }
 end.

@@ -1,0 +1,23 @@
+digraph {
+graph [ordering="out"];
+node0[label="program"];
+node1[label="var_list"];
+node2[label="(int) a@0"];
+node1 -> node2;
+node3[label="(int) b@1"];
+node1 -> node3;
+node4[label="(int) ret@2"];
+node1 -> node4;
+node0 -> node1;
+node5[label="writeln@0"];
+node6[label="stmt_list"];
+node7[label="if"];
+node8[label="(boolean) >"];
+node9[label="(int) b@1"];
+node8 -> node9;
+node10[label="(int) ret@2"];
+node8 -> node10;
+node7 -> node8;
+node11[label="stmt_list"];
+node12[label=":="];
+}

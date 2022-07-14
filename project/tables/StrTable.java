@@ -42,6 +42,17 @@ public class StrTable{
         return false;
     }
 
+    public int getEntryId(String name) {
+        for(int i = 0; i < table.size(); i++) {
+            EntryStr entry = this.table.get(i);
+            if(entry.name.equals(name)) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
     public String getText(int idx) {
         return table.get(idx).name;
     }

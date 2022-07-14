@@ -8,6 +8,7 @@ import java.util.List;
 import tables.*;
 import types.Type;
 
+
 // Implementação dos nós da AST.
 public class AST {
     public final NodeKind kind;
@@ -42,9 +43,7 @@ public class AST {
 
     public void addChild(AST child) {
         // check if intData child is -1 (it means that it is a list)
-        if (child.intData != -1) {
-            this.children.add(child);
-        }
+        this.children.add(child);
     }
 
     public AST getChild(int idx) {
@@ -74,7 +73,10 @@ public class AST {
 	    	System.err.printf("%s@", varTable.getName(this.intData)); 
 	    } else if (this.kind == NodeKind.FUNC_DECL_NODE || this.kind == NodeKind.FUNC_USE_NODE) {
             System.err.printf("%s@", functionTable.getName(this.intData)); 
-        } else {
+        } else if (this.kind == NodeKind.ARRAY_ELMT_NODE) {
+            System.err.printf("%s[]@", varTable.getName(this.intData));
+        }
+        else {
 	    	System.err.printf("%s", this.kind.toString());
 	    }
 	    if (NodeKind.hasData(this.kind)) {
@@ -89,13 +91,15 @@ public class AST {
 	    System.err.printf("\"];\n");
 
         for (AST child : this.children) {
-            // todo kind tem to string né?
-            int childNr = child.printNodeDot();
-            System.err.printf("node%d -> node%d;\n", myNr, childNr);
+            if(child != null){
+                int childNr = child.printNodeDot();
+                System.err.printf("node%d -> node%d;\n", myNr, childNr);
+            }
         }
 	    return myNr;
 	}
 
+  
     // Imprime a árvore toda em stderr.
 	public static void printDot(AST tree) {
 	    nr = 0;

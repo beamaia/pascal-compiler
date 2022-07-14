@@ -1,6 +1,7 @@
 program exProcedure;
 var
    a, b, c,  min: integer;
+   d,e : Array[0..9] of Integer; 
 procedure findMin(x, y, z: integer; var m: integer); 
 (* Finds the minimum of the 3 values *)
 
@@ -9,7 +10,8 @@ begin
       m:= x;
    else
       m:= y;
-   
+   a := m;
+   d[1] := a;
    if z < m then
       m:= z;
 end; { end of procedure findMin }  
