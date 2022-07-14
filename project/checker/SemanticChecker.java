@@ -294,12 +294,20 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
         @param ctx Contexto de declaracao de procedures.
      */
     public AST visitProcedures_decl(Procedures_declContext ctx) {
+        
+        AST func;
+        
         this.lastEnteredScope = Scope.FUNCTION;
 
+        AST oldScopeRoot;
+        
+        VarTable oldVarTable;
+        
         String procName = ctx.ID().getText();
         int startLine = ctx.getStart().getLine();
 
-        AST func;
+
+
 
         if (variableTable.contains(procName)) {
             System.out.println("Erro: there is already a variable with " + procName + " name!");
@@ -312,11 +320,21 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
             return null;
         } else {
             EntryFunc newProc = new EntryFunc(procName, startLine, NO_TYPE);
+
             this.lastFuncVisited = procName;
+
             int idx = functionTable.addFunc(newProc);
+
+            oldVarTable = this.variableTable;
+
+            VarTable funcVarsTable = functionTable.getVarTable(this.lastFuncVisited);
+            this.variableTable = funcVarsTable;
 
             func = new AST(FUNC_DECL_NODE, idx, lastDeclType, variableTable);
             funcVarsRoot = AST.newSubtree(VAR_LIST_NODE, NO_TYPE, variableTable);
+
+            oldScopeRoot = this.stmtScopeRoot;
+            this.stmtScopeRoot = func;
 
             // Visita parametros para adicionar a lista de simbolos da funcao
             if (ctx.procedure_params_sect() != null) {
@@ -327,10 +345,15 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
                 func.addChild(funcVarsRoot);
                 func.varTable = functionTable.getVarTable(idx);
             }
+
+            if(ctx.stmt_sect() != null) {
+                visit(ctx.stmt_sect());
+            }
         }
 
         funcRoot.addChild(func);
         this.lastEnteredScope = Scope.GLOBAL;
+        this.stmtScopeRoot = oldScopeRoot;
         return func;
     }
 
@@ -525,13 +548,17 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
         String varName = ctx.ID().getText();
         Type varType;
         AST exprNode;
+        VarTable ref;
 
         if(variableTable.contains(varName) ){
             varType = variableTable.getType(variableTable.getEntryId(varName));
+            ref = variableTable;
         } else if (root.varTable.contains(varName)) {
             varType = root.varTable.getType(root.varTable.getEntryId(varName));
+            ref = root.varTable;
         } else if (lastEnteredScope == Scope.FUNCTION && functionTable.funcContainsVar(lastFuncVisited, varName)) {
             varType = functionTable.getFuncVar(lastFuncVisited, varName).type;
+            ref = variableTable;
         } else {
             System.out.println("Error: variable " + varName + " not declared");
             System.exit(1);
@@ -549,15 +576,15 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
             return null;
         }
         
-        AST assign = new AST(ASSIGN_NODE, 0, NO_TYPE, variableTable);
+        AST assign = new AST(ASSIGN_NODE, 0, NO_TYPE, ref);
 
 
         
         if(exprNode != null){
-            AST IdChild = new AST(VAR_USE_NODE, variableTable.getEntryId(varName), varType, variableTable);
+            AST IdChild = new AST(VAR_USE_NODE, ref.getEntryId(varName), varType, ref);
 
-            IdChild = Conv.createConvNode(unif.lc, IdChild, variableTable);
-		    exprNode = Conv.createConvNode(unif.rc, exprNode, variableTable);
+            IdChild = Conv.createConvNode(unif.lc, IdChild, ref);
+		    exprNode = Conv.createConvNode(unif.rc, exprNode, ref);
 
             assign.addChild(IdChild);
             assign.addChild(exprNode);
@@ -577,6 +604,8 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
         String varName = ctx.ID().getText();
         AST index = visit(ctx.array_index());
         Type indexType = index.type;
+        VarTable ref;
+
 
         Type varType = NO_TYPE;
 
@@ -584,16 +613,23 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
             System.out.println("Error: array index must be an int");
             System.exit(1);
             return null;
-        }else if( !variableTable.getEntry(varName).isArray){
+        }else if( variableTable.getEntry(varName) != null && !variableTable.getEntry(varName).isArray){
+            System.out.println("Error: variable " + varName + " is not an array");
+            System.exit(1);
+            return null;
+        }else if ( root.varTable.getEntry(varName) != null && !root.varTable.getEntry(varName).isArray) {
             System.out.println("Error: variable " + varName + " is not an array");
             System.exit(1);
             return null;
         } else if (variableTable.contains(varName)) {
             varType = variableTable.getType(variableTable.getEntryId(varName));
+            ref = variableTable;
         } else if (root.varTable.contains(varName)) {
             varType = root.varTable.getType(root.varTable.getEntryId(varName));
+            ref = root.varTable;
         } else if (lastEnteredScope == Scope.FUNCTION && functionTable.funcContainsVar(lastFuncVisited, varName)) {
             varType = functionTable.getFuncVar(lastFuncVisited, varName).type;
+            ref = variableTable;
         } else {
             System.out.println("Error: variable " + varName + " not declared");
             System.exit(1);
@@ -611,14 +647,14 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
             return null;
         }
         
-        AST assign = new AST(ASSIGN_NODE, 0, NO_TYPE, variableTable);
+        AST assign = new AST(ASSIGN_NODE, 0, NO_TYPE, ref);
 
         if(exprNode != null){
-            AST IdChild = new AST(ARRAY_ELMT_NODE, variableTable.getEntryId(varName), varType, variableTable);
+            AST IdChild = new AST(ARRAY_ELMT_NODE, ref.getEntryId(varName), varType, ref);
             IdChild.addChild(index);
 
-            IdChild = Conv.createConvNode(unif.lc, IdChild, variableTable);
-		    exprNode = Conv.createConvNode(unif.rc, exprNode, variableTable);
+            IdChild = Conv.createConvNode(unif.lc, IdChild, ref);
+		    exprNode = Conv.createConvNode(unif.rc, exprNode, ref);
 
             assign.addChild(IdChild);
             assign.addChild(exprNode);
