@@ -11,6 +11,7 @@ import parser.PASLexer;
 import parser.PASParser;
 
 
+
 public class Main {
 
 	/*
@@ -48,6 +49,9 @@ public class Main {
 		checker.visit(tree);
 		
 		checker.showTables();
+		
+
+
 		// // Saída final.
 		//if (checker.hasPassed()) {
 		//	System.out.println("PARSE SUCCESSFUL!");

@@ -5,6 +5,7 @@ var
 (*function definition *)
 (* function name(argument(s): type1; argument(s): type2; ...): function_type; 
 *)
+
 function max(num1, num2: integer; f1,f2 : char ): integer;
 
 var
@@ -14,9 +15,10 @@ var
 begin
    if (num1 > num2) then
       result := num1;
-   
+      result := a;
    else
       result := num2;
+
    max := result;
 end;
 
@@ -39,7 +41,7 @@ begin
    a := 100;
    b := 200;
    (* calling a function to get max value *)
-   ret := max(a, b);
+   {ret := max(a, b);}
    
    writeln( 'Max value is : ', ret );
 end.

@@ -34,6 +34,16 @@ public class VarTable{
         return table.get(i).type;
     }
 
+    public Type getType(String name) {
+        for (int i = 0; i < table.size(); i++) {
+            if (table.get(i).name.equals(name)) {
+                return table.get(i).type;
+            }
+        }
+        return null;
+    }
+
+
     public EntryInput getEntry(String name) {
         for(EntryInput entry : table) {
             if(entry.name.equals(name)) {

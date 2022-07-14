@@ -139,6 +139,16 @@ public enum NodeKind {
             return "";
         }
     },
+    ARRAY_ELMT_NODE {
+        public String toString() {
+            return "array_elmt";
+        }
+    },
+    ARRAY_INDEX_NODE{
+        public String toString() {
+            return "array_index";
+        }
+    },
     FUNC_LIST_NODE {
         public String toString() {
             return "func_list";

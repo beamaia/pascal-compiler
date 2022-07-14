@@ -8,6 +8,7 @@ import java.util.List;
 import tables.*;
 import types.Type;
 
+
 // Implementação dos nós da AST.
 public class AST {
     public final NodeKind kind;
@@ -72,7 +73,10 @@ public class AST {
 	    	System.err.printf("%s@", varTable.getName(this.intData)); 
 	    } else if (this.kind == NodeKind.FUNC_DECL_NODE || this.kind == NodeKind.FUNC_USE_NODE) {
             System.err.printf("%s@", functionTable.getName(this.intData)); 
-        } else {
+        } else if (this.kind == NodeKind.ARRAY_ELMT_NODE) {
+            System.err.printf("%s[]@", varTable.getName(this.intData));
+        }
+        else {
 	    	System.err.printf("%s", this.kind.toString());
 	    }
 	    if (NodeKind.hasData(this.kind)) {
@@ -95,6 +99,7 @@ public class AST {
 	    return myNr;
 	}
 
+  
     // Imprime a árvore toda em stderr.
 	public static void printDot(AST tree) {
 	    nr = 0;
