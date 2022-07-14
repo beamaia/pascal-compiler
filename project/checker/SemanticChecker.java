@@ -123,7 +123,7 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
         int line = (ctx.getStart().getLine());
 
         // Check if id is already in table
-        if (variableTable.contains(id)) {
+        if (variableTable.contains(id) || root.varTable.contains(id)) {
             System.out.println("Error: variable " + id + " already declared");
             System.exit(1);
             return null;
@@ -526,8 +526,10 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
         Type varType;
         AST exprNode;
 
-        if(variableTable.contains(varName)){
+        if(variableTable.contains(varName) ){
             varType = variableTable.getType(variableTable.getEntryId(varName));
+        } else if (root.varTable.contains(varName)) {
+            varType = root.varTable.getType(root.varTable.getEntryId(varName));
         } else if (lastEnteredScope == Scope.FUNCTION && functionTable.funcContainsVar(lastFuncVisited, varName)) {
             varType = functionTable.getFuncVar(lastFuncVisited, varName).type;
         } else {
@@ -588,6 +590,8 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
             return null;
         } else if (variableTable.contains(varName)) {
             varType = variableTable.getType(variableTable.getEntryId(varName));
+        } else if (root.varTable.contains(varName)) {
+            varType = root.varTable.getType(root.varTable.getEntryId(varName));
         } else if (lastEnteredScope == Scope.FUNCTION && functionTable.funcContainsVar(lastFuncVisited, varName)) {
             varType = functionTable.getFuncVar(lastFuncVisited, varName).type;
         } else {
@@ -844,7 +848,14 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
             Type type = variableTable.getType(idx);
 
             return new AST(VAR_USE_NODE, idx, type, variableTable);
-        } else if (lastEnteredScope == Scope.FUNCTION && functionTable.funcContainsVar(lastFuncVisited, name)) {
+        } else if (root.varTable.contains(name)) {
+            int idx = root.varTable.getEntryId(name);
+            Type type = root.varTable.getType(idx);
+
+            return new AST(VAR_USE_NODE, idx, type, root.varTable);
+
+        }
+         else if (lastEnteredScope == Scope.FUNCTION && functionTable.funcContainsVar(lastFuncVisited, name)) {
             Type type = functionTable.getFuncVar(lastFuncVisited, name).type;
             int idx = functionTable.getVarTable(lastFuncVisited).getEntryId(name);
 

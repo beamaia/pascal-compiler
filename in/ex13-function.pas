@@ -15,10 +15,9 @@ var
 begin
    if (num1 > num2) then
       result := num1;
-      result := a;
    else
       result := num2;
-
+   result := result + b;
    max := result;
 end;
 
