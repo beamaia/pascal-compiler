@@ -5,24 +5,22 @@ VAR
    i : INTEGER;     { variable name is i, type is integer }
    c : CHAR;        { variable name is c, type is character }
    s : char;      { variable name is s, type is char }
-   a,b: char;
-   id,y: INTEGER;
+   a,b,c: char;
+   id,x,y: INTEGER;
 BEGIN
     x := -34.55;    { valid real number assigned to variable x }
-    x := 56;   { valid real number assigned to variable x }
-    writeln(x);     { x contains the value -3.9E-3 }
-    id:=2;
+    x := 0;   { valid real number assigned to variable x }
+    WRITELN(x);     { x contains the value 0 }
     i := 10;        { valid integer number assigned to variable i }
-    i := id * i + i / i;     { valid (!) - i will be 1000 now }
+    i := i * i;     { valid (!) - i will be 100 now }
     i := 9933;      { valid integer number assigned to variable i }
     i := -99999;    { invalid integer - too small }
     i := 999.44;    { invalid assignment - types do not match }
-    {i := 'A';       { invalid assignment - types do not match }
-    {c := '1';       { valid character assigned to variable c }
-    {c := 1;         { invalid assignment - types do not match }
-    {c := 'Bert';    { invalid assignment - types do not match }
+    c := '1';       { valid character assigned to variable c }
+    c := 1;         { invalid assignment - types do not match }
+    c := 'Bert';    { invalid assignment - types do not match }
     c := 'd';       { valid character assigned to variable c }
-    writeln(c);     { c contains the value 'd' }
-    {d := 'c';       { unknown variable - the variable d is not declared }
-    writeln(s);     { invalid reference - s has undefined value }
+    WRITELN(c);     { c contains the value 'd' }
+    d := 'c';       { unknown variable - the variable d is not declared }
+    WRITELN(s);     { invalid reference - s has undefined value }
 END.
