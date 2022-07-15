@@ -139,7 +139,7 @@ TWODOTS: '..'  ;
 INT_VAL  : '-'?[0-9]+;
 REAL_VAL : '-'?[0-9]+ '.' [0-9]+ 
     | [0-9]+ '.' [0-9] E MINUS [0-9]+;
-CHAR_VAL : '\'' [a-zA-Z] '\'';
+CHAR_VAL : '\'' [a-zA-Z0-9] '\'';
 SQSTR : '\'' (~['"] )* '\'';
 
 TRUE: T R U E;
