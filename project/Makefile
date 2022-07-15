@@ -26,7 +26,7 @@ MAIN_PATH=checker
 BIN_PATH=bin
 
 # Modificador para o teste de um arquivo só.
-FILE=$(IN)/ex14-procedures.pas
+FILE=$(IN)/semerr-err15-char-unary-minus.pas
 
 all: antlr javac
 	@echo "Done."
