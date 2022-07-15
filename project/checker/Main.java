@@ -48,15 +48,15 @@ public class Main {
 		SemanticChecker checker = new SemanticChecker();
 		checker.visit(tree);
 		
-		checker.showTables();
 		
+		// Saída final.
+		System.out.println("PARSE SUCCESSFUL!");
 
+		boolean show = false;
 
-		// // Saída final.
-		//if (checker.hasPassed()) {
-		//	System.out.println("PARSE SUCCESSFUL!");
-		 	//checker.printTables();
-		//}
+		if (show) {
+			checker.showTables();
+		}
 	}
 
 }
