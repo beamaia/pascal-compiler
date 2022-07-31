@@ -52,5 +52,8 @@ runall:
 	 	$(JAVA) $(CLASS_PATH_OPTION):$(BIN_PATH) $(MAIN_PATH)/Main $${FILE}; \
 	done;
 
+backend:
+	$(JAVA) -jar Mars4_5.jar sm out.asm
+
 clean:
 	@rm -rf $(GEN_PATH)
