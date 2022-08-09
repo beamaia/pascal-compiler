@@ -7,80 +7,80 @@ package code;
 public enum OpCode {
     
     // Arithmetic and Logical Instructions
-    ADD(name: "ADD", opCount: 3),
-    ADDU(name: "ADDU", opCount: 3),
-    ADDI(name: "ADDI", opCount: 3),
-    ADDIU(name: "ADDIU", opCount: 3),
-    AND(name: "AND", opCount: 3),
-    ANDI(name: "ANDI", opCount: 3),
+    ADD("ADD", 3),
+    ADDU("ADDU", 3),
+    ADDI("ADDI", 3),
+    ADDIU("ADDIU", 3),
+    AND("AND", 3),
+    ANDI("ANDI", 3),
 
-    DIV(name: "DIV", opCount: 2),
-    DIVU(name: "DIVU", opCount: 2),
+    DIV("DIV", 2),
+    DIVU("DIVU", 2),
     
-    MULT(name: "MULT", opCount: 2),
-    MULTU(name: "MULTU", opCount: 2),
+    MULT("MULT", 2),
+    MULTU("MULTU", 2),
 
-    NOR(name: "NOR", opCount: 3),
-    OR(name: "OR", opCount: 3),
-    ORI(name: "ORI", opCount: 3),
+    NOR("NOR", 3),
+    OR("OR", 3),
+    ORI("ORI", 3),
 
-    SLL(name: "SLL", opCount: 3),
-    SLLV(name: "SLLV", opCount: 3),
+    SLL("SLL", 3),
+    SLLV("SLLV", 3),
 
-    SRA(name: "SRA", opCount: 3),
-    SRAV(name: "SRAV", opCount: 3),
+    SRA("SRA", 3),
+    SRAV("SRAV", 3),
 
-    SRL(name: "SRL", opCount: 3),
-    SRLV(name: "SRLV", opCount: 3),
+    SRL("SRL", 3),
+    SRLV("SRLV", 3),
 
-    SUB(name: "SUB", opCount: 3),
-    SUBU(name: "SUBU", opCount: 3),
+    SUB("SUB", 3),
+    SUBU("SUBU", 3),
 
-    XOR(name: "XOR", opCount: 3),
-    XORI(name: "XORI", opCount: 3),
+    XOR("XOR", 3),
+    XORI("XORI", 3),
 
     // Constant-Manipulating Instructions
-    LHI(name: "LHI", opCount: 2),
-    LLO(name: "LLO", opCount: 2),
+    LHI("LHI", 2),
+    LLO("LLO", 2),
 
     // Comparison Instructions
-    SLT(name: "SLT", opCount: 3),
-    SLTU(name: "SLTU", opCount: 3),
-    SLTI(name: "SLTI", opCount: 3),
-    SLTIU(name: "SLTIU", opCount: 3),
+    SLT("SLT", 3),
+    SLTU("SLTU", 3),
+    SLTI("SLTI", 3),
+    SLTIU("SLTIU", 3),
 
     // Branch Instructions
-    BEQ(name: "BEQ", opCount: 3),
-    BGTZ(name: "BGTZ", opCount: 2),
-    BLEZ(name: "BLEZ", opCount: 2),
-    BNE(name: "BNE", opCount: 3),
+    BEQ("BEQ", 3),
+    BGTZ("BGTZ", 2),
+    BLEZ("BLEZ", 2),
+    BNE("BNE", 3),
 
     // Jump Instructions
-    J(name: "J", opCount: 1),
-    JAL(name: "JAL", opCount: 1),
-    JALR(name: "JALR", opCount: 1),
-    JR(name: "JR", opCount: 1),
+    J("J", 1),
+    JAL("JAL", 1),
+    JALR("JALR", 1),
+    JR("JR", 1),
 
     // Load Instructions
-    LB(name: "LB", opCount: 3),
-    LBU(name: "LBU", opCount: 3),
-    LH(name: "LH", opCount: 3),
-    LHU(name: "LHU", opCount: 3),
-    LW(name: "LW", opCount: 3),
+    LB("LB", 3),
+    LBU("LBU", 3),
+    LH("LH", 3),
+    LHU("LHU", 3),
+    LW("LW", 3),
 
     // Store Instructions
-    SB(name: "SB", opCount: 3),
-    SH(name: "SH", opCount: 3),
-    SW(name: "SW", opCount: 3),
+    SB("SB", 3),
+    SH("SH", 3),
+    SW("SW", 3),
 
     // Data Movement Instructions
-    MFHI(name: "MFHI", opCount: 1),
-    MFLO(name: "MFLO", opCount: 1),
-    MTHI(name: "MTHI", opCount: 1),
-    MTLO(name: "MTLO", opCount: 1),
+    MFHI("MFHI", 1),
+    MFLO("MFLO", 1),
+    MTHI("MTHI", 1),
+    MTLO("MTLO", 1),
 
     // Exception and Interrupt Instructions
-    TRAP(name: "TRAP", opCount: 1);
+    TRAP("TRAP", 1);
 
 
     public final String name;
