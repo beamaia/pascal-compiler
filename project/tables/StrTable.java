@@ -17,6 +17,10 @@ public class StrTable{
         super();
     }
 
+    public int size() {
+        return table.size();
+    }
+
     
     public int addStr(EntryStr entry) {
 		int idxAdded = table.size();

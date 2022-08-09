@@ -33,9 +33,9 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
 
     AST lastStmtUsed;
 
-    private StrTable stringTable = new StrTable();
-    private VarTable variableTable = new VarTable();
-    private FuncTable functionTable = new FuncTable();
+    public StrTable stringTable = new StrTable();
+    public VarTable variableTable = new VarTable();
+    public FuncTable functionTable = new FuncTable();
 
     private boolean isArray = false;
     

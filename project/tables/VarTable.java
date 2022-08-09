@@ -16,6 +16,10 @@ public class VarTable{
     
     public List<EntryInput> table = new ArrayList<EntryInput>();
 
+    public int size() {
+        return table.size();
+    }
+
     public int addVar(EntryInput e) {
         int idxAdded = table.size();
         table.add(e);

@@ -10,6 +10,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import parser.PASLexer;
 import parser.PASParser;
 
+import code.*;
 
 
 public class Main {
@@ -57,6 +58,9 @@ public class Main {
 		if (show) {
 			checker.showTables();
 		}
+
+		CodeGen codeGen = new CodeGen(checker.stringTable, checker.variableTable);
+		codeGen.execute(checker.root);
 	}
 
 }
