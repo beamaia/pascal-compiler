@@ -1,0 +1,26 @@
+* Passos para executar a solução do Lab07 no ANTLR:
+
+1) Edite as variáveis do Makefile como antes.
+
+2) Para rodar o ANTLR e compilar os arquivos gerados:
+
+   $ make
+
+3) Para compilador o simulador da TM (Tiny Machine):
+
+   $ make tm
+
+3) Para executar o compilador com um único arquivo de entrada:
+
+   $ make run FILE=arquivo_de_teste
+
+4) Se quiser rodar todos os casos de teste de uma vez, basta fazer:
+
+   $ ./gen_code.sh
+   $ ./run_tests.sh
+
+OBSERVAÇÕES:
+
+Versão final do compilador. Espera-se que neste ponto o código implementado
+seja razoavelmente fácil de entender.
+
