@@ -20,13 +20,13 @@ GEN_PATH=lexer
 IN=/in
 
 # Diretório aonde está a classe com a função main.
-MAIN_PATH=checker
+MAIN_PATH=main
 
 # Diretório para os arquivos .class
 BIN_PATH=bin
 
 # Modificador para o teste de um arquivo só.
-FILE=$(IN)/semerr-err15-char-unary-minus.pas
+FILE=$(IN)/ex02-assign-types.pas
 
 all: antlr javac
 	@echo "Done."

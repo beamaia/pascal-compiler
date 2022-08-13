@@ -1,4 +1,4 @@
-package checker;
+package main;
 
 import java.io.IOException;
 
@@ -10,6 +10,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import parser.PASLexer;
 import parser.PASParser;
 
+import checker.*;
 import code.*;
 
 
