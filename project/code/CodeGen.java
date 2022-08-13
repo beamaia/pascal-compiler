@@ -33,6 +33,9 @@ public final class CodeGen extends ASTBaseVisitor<Integer> {
         nextInstr = 0;
         intRegsCount = 0;
         floatRegsCount = 0;
+
+        System.out.printf(".data:\n");
+        
         dumpStrTable();
         visit(root);
         emit(TRAP);
@@ -46,9 +49,21 @@ public final class CodeGen extends ASTBaseVisitor<Integer> {
 	    }
 	}
 
+    public static String removeFirstandLast(String str) {
+ 
+        // Removing first and last character
+        // of a string using substring() method
+        str = str.substring(1, str.length() - 1);
+ 
+        // Return the modified string
+        return str;
+    }
+
 	void dumpStrTable() {
+        String aux;
 	    for (int i = 0; i < st.size(); i++) {
-	        System.out.printf("SSTR %s\n", st.getText(i));
+            aux = removeFirstandLast(st.getText(i));
+	        System.out.printf("\tstring%03d: .asciiz \"%s\"\n", i, aux);
 	    }
 	}
 
