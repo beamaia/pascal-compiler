@@ -52,7 +52,7 @@ public class Main {
 		
 		
 		// Saída final.
-		System.out.println("PARSE SUCCESSFUL!");
+		// System.out.println("PARSE SUCCESSFUL!");
 
 		boolean show = false;
 
