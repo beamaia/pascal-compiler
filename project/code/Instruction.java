@@ -7,11 +7,11 @@ public final class Instruction {
     // OpCode da instrução.
     public final OpCode op;
     // Operandos da instrução.
-    public int o1;
-    public int o2;
-    public int o3;
+    public String o1;
+    public String o2;
+    public String o3;
 
-    public Instruction(OpCode op, int o1, int o2, int o3) {
+    public Instruction(OpCode op, String o1, String o2, String o3) {
         this.op = op;
         this.o1 = o1;
         this.o2 = o2;
@@ -26,11 +26,11 @@ public final class Instruction {
 		Formatter f = new Formatter(sb);
 		f.format("%s", this.op.toString());
 		if (this.op.opCount == 1) {
-			f.format(" %d", this.o1);
+			f.format(" %s", this.o1);
 		} else if (this.op.opCount == 2) {
-			f.format(" %d, %d", this.o1, this.o2);
+			f.format(" %s, %s", this.o1, this.o2);
 		} else if (this.op.opCount == 3) {
-			f.format(" %d, %d, %d", this.o1, this.o2, this.o3);
+			f.format(" %s, %s, %s", this.o1, this.o2, this.o3);
 		}
 		f.close();
 		return sb.toString();
