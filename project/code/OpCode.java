@@ -8,17 +8,20 @@ public enum OpCode {
     
     // Arithmetic and Logical Instructions
     ADD("ADD", 3),
+    ADD_F("ADD.F", 3),
     ADDU("ADDU", 3),
     ADDI("ADDI", 3),
     ADDIU("ADDIU", 3),
     AND("AND", 3),
     ANDI("ANDI", 3),
 
-    DIV("DIV", 2),
-    DIVU("DIVU", 2),
+    DIV("DIV", 3),
+    DIV_F("DIV.F", 3),
+    DIVU("DIVU", 3),
     
-    MULT("MULT", 2),
-    MULTU("MULTU", 2),
+    MULT("MULT", 3),
+    MULT_F("MULT.F", 3),
+    MULTU("MULTU", 3),
 
     NOR("NOR", 3),
     OR("OR", 3),
@@ -34,6 +37,7 @@ public enum OpCode {
     SRLV("SRLV", 3),
 
     SUB("SUB", 3),
+    SUB_F("SUB.F", 3),
     SUBU("SUBU", 3),
 
     XOR("XOR", 3),
@@ -80,8 +84,8 @@ public enum OpCode {
     MTLO("MTLO", 1),
 
     // Exception and Interrupt Instructions
-    TRAP("TRAP", 1);
-
+    TRAP("TRAP", 1),
+    HALT("HALT", 1);
 
     public final String name;
 	public final int opCount;
