@@ -8,7 +8,7 @@ public enum OpCode {
     
     // Arithmetic and Logical Instructions
     ADD("ADD", 3),
-    ADD_F("ADD.F", 3),
+    ADD_S("ADD.S", 3),
     ADDU("ADDU", 3),
     ADDI("ADDI", 3),
     ADDIU("ADDIU", 3),
@@ -16,11 +16,11 @@ public enum OpCode {
     ANDI("ANDI", 3),
 
     DIV("DIV", 3),
-    DIV_F("DIV.F", 3),
+    DIV_S("DIV.S", 3),
     DIVU("DIVU", 3),
     
     MULT("MULT", 3),
-    MULT_F("MULT.F", 3),
+    MULT_S("MULT.S", 3),
     MULTU("MULTU", 3),
 
     NOR("NOR", 3),
@@ -37,7 +37,7 @@ public enum OpCode {
     SRLV("SRLV", 3),
 
     SUB("SUB", 3),
-    SUB_F("SUB.F", 3),
+    SUB_S("SUB.S", 3),
     SUBU("SUBU", 3),
 
     XOR("XOR", 3),
