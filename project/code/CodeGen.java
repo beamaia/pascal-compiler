@@ -7,6 +7,7 @@ import code.RegistersOrg.*;
 import code.Registers;
 
 import java.math.BigInteger;
+import java.io.PrintWriter;
 
 
 import ast.*;
@@ -22,6 +23,7 @@ public final class CodeGen extends ASTBaseVisitor<Integer> {
     private final StrTable st;
     private final VarTable vt;
     private RegistersOrg registers;
+    private PrintWriter writer;
 
     // Contadores
     private static int nextInstr;      // contador de instrução
@@ -42,21 +44,27 @@ public final class CodeGen extends ASTBaseVisitor<Integer> {
         intRegsCount = 0;
         floatRegsCount = 0;
 
+        try{
+            writer = new PrintWriter("out.asm", "UTF-8");
+        } catch (Exception e) {}
+
         // Prints data
-        System.out.printf(".data:\n");
+        writer.printf(".data:\n");
         dumpStrTable();
 
-        System.out.printf(".main:\n");
+        writer.printf(".main:\n");
 
         visit(root);
-        emit(HALT);
+        // emit(HALT);
         dumpProgram();
+
+        writer.close();
     }
 
     // Funções de print
     void dumpProgram() {
 	    for (int addr = 0; addr < nextInstr; addr++) {
-	    	System.out.printf("%s\n", code[addr].toString());
+	    	writer.printf("\t%s\n", code[addr].toString());
 	    }
 	}
 
@@ -75,7 +83,7 @@ public final class CodeGen extends ASTBaseVisitor<Integer> {
 
 	    for (int i = 0; i < st.size(); i++) {
             aux = removeFirstandLast(st.getText(i));
-	        System.out.printf("\tstring%05d: .asciiz \"%s\"\n", i, aux);
+	        writer.printf("\tstring%05d: .asciiz \"%s\"\n", i, aux);
 	    }
 	}
 
@@ -128,12 +136,14 @@ public final class CodeGen extends ASTBaseVisitor<Integer> {
         if (lf.kind == NodeKind.VAR_USE_NODE) {
             String var = lf.varTable.getName(lf.intData);
 
-            if (lf.type == Type.INT_TYPE || lf.type == Type.BOOL_TYPE || lf.type == Type.CHAR_TYPE) {
+            // TODO conserta pra char
+            // Muda addi pra li (load int)
+            if (lf.type == Type.INT_TYPE || lf.type == Type.BOOL_TYPE || rt.kind == NodeKind.CHAR_VAL_NODE) {
                 op = OpCode.ADDI;
             } else if (lf.type == Type.REAL_TYPE) {
-                op = OpCode.ADD_F;
+                op = OpCode.ADD_S;
             } else {
-                throw new RuntimeException("Tipo de variável não suportado");
+                throw new RuntimeException("Tipo de variável não suportado"); // TODO ver se fica como exception msm
             }
 
 
@@ -152,7 +162,8 @@ public final class CodeGen extends ASTBaseVisitor<Integer> {
                 }
             }
 
-            if (rt.kind == NodeKind.INT_VAL_NODE || rt.kind == NodeKind.BOOL_VAL_NODE || rt.kind == NodeKind.CHAR_VAL_NODE) {
+            // Lidando com tipos primitivos
+            if (rt.kind == NodeKind.INT_VAL_NODE || rt.kind == NodeKind.BOOL_VAL_NODE ) {
                 o2 = "" + rt.intData; 
                 emit(op, o1, o3, o2);
             } else if (rt.kind == NodeKind.REAL_VAL_NODE) {
@@ -160,7 +171,8 @@ public final class CodeGen extends ASTBaseVisitor<Integer> {
                 emit(OpCode.ADDI, "$t0", "$zero", floatToHex(rt.floatData));
                 emit(op, o1, o3, "$t0");
             }
-        }
+        } 
+        // TODO levanta erro
 
         
         return -1;
@@ -256,8 +268,8 @@ public final class CodeGen extends ASTBaseVisitor<Integer> {
 
     @Override
     protected Integer visitIntValNode(AST node) {
-        System.out.println("Integer value: " + node.intData);
-        System.out.println(node.children.size());
+        writer.println("Integer value: " + node.intData);
+        writer.println(node.children.size());
         return -1;
     }
 
