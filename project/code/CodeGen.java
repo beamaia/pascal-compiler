@@ -26,6 +26,7 @@ public final class CodeGen extends ASTBaseVisitor<AST> {
     private PrintWriter writer;
 
     private Stack<AST> call_stack;
+    private Stack<String> register_stack;
 
     private AST caller;
 
@@ -40,6 +41,7 @@ public final class CodeGen extends ASTBaseVisitor<AST> {
         this.code = new Instruction[INSTR_MEM_SIZE];
         this.registers = new RegistersOrg();
         this.call_stack = new Stack<AST>();
+        this.register_stack = new Stack<String>();
     }
 
     // Inicialização e execução da visita da AST
@@ -58,7 +60,8 @@ public final class CodeGen extends ASTBaseVisitor<AST> {
         writer.printf(".data:\n");
         dumpStrTable();
 
-        writer.printf(".main:\n");
+        writer.printf(".text:\n");
+        //writer.printf("\tmain\n");
 
         visit(root);
         // emit(HALT);
@@ -123,58 +126,56 @@ public final class CodeGen extends ASTBaseVisitor<AST> {
     }
 
     // Visitadores especializados
+    void setAstRegister(AST r) {
+        String var = r.varTable.getName(r.intData);
+        if (registers.contains(var)) 
+            if (r.type == Type.INT_TYPE) {
+                r.register = "$s" + registers.getIntReg(var);
+            } else {
+                r.register = "$f" + registers.getFloatReg(var);
+            }
+        else
+            if (r.type == Type.INT_TYPE) {
+                r.register = "$s" + registers.addIntReg(var);
+            } else {
+                r.register = "$f" + registers.addFloatReg(var);
+            }
+    }
 
     @Override
     protected AST visitAssignNode(AST node) {
-        AST lf = node.children.get(0);
-        AST rt = node.children.get(1);
-        OpCode op;
-        String o1, o2, o3;
-        o3 = "$zero";
-        call_stack.push(lf);
-        visit(rt);
+        if (node.getChild(0) == null)
+            return null;
+        
+        AST r = node.children.get(0);
+        call_stack.push(r);
+        AST e = node.children.get(1);
+        visit(e);
+        // get the register name
+        this.setAstRegister(r);
 
-        if (lf.kind == NodeKind.VAR_USE_NODE) {
-            String var = lf.varTable.getName(lf.intData);
+        // adds register to stack
+        register_stack.push(r.register);
 
-            // TODO conserta pra char
-            // Muda addi pra li (load int)
-            if (lf.type == Type.INT_TYPE || lf.type == Type.BOOL_TYPE || rt.kind == NodeKind.CHAR_VAL_NODE) {
-                op = OpCode.ADDI;
-            } else if (lf.type == Type.REAL_TYPE) {
-                op = OpCode.ADD_S;
-            } else {
-                throw new RuntimeException("Tipo de variável não suportado"); // TODO ver se fica como exception msm
-            }
+        OpCode op = r.type == Type.INT_TYPE ? OpCode.ADDI : OpCode.ADD_S;
+        String o1 = r.register;
+        String o2, o3 = "$zero";
 
-            if (registers.contains(var)) {
-                if (op == OpCode.ADDI) {
-                    o1 = "$r" + registers.getIntReg(var);
-                } else {
-                    o1 = "$f" + registers.getFloatReg(var);
-                }
-
-            } else {
-                if (op == OpCode.ADDI) {
-                    o1 = "$r" + registers.addIntReg(var);
-                } else {
-                    o1 = "$f" + registers.addFloatReg(var);
-                }
-            }
-
-            // Lidando com tipos primitivos
-            if (rt.kind == NodeKind.INT_VAL_NODE || rt.kind == NodeKind.BOOL_VAL_NODE) {
-                o2 = "" + Word.integerToHex(rt.intData);
+        // checks if last register in stack is the same as r
+        if(call_stack.peek() == r) {
+            o2 = "" + Word.integerToHex(e.intData);
+            emit(op, o1, o3, o2);
+        } else {
+            op = OpCode.ADD;
+            AST fst_aux = call_stack.pop();
+            o2 = fst_aux.register;
+            if(call_stack.peek() == r) {
                 emit(op, o1, o3, o2);
-            } else if (rt.kind == NodeKind.REAL_VAL_NODE) {
-                o2 = "" + rt.floatData;
-                emit(OpCode.ADDI, "$t0", "$zero", Word.floatToHex(rt.floatData));
-                emit(op, o1, o3, "$t0");
             }
         }
-        call_stack.pop();
-        // TODO levanta erro
 
+        call_stack.pop();
+        register_stack.pop();
         return node;
     }
 
@@ -281,8 +282,8 @@ public final class CodeGen extends ASTBaseVisitor<AST> {
 
     @Override
     protected AST visitIntValNode(AST node) {
-        // writer.println("Integer value: " + node.intData);
-        // writer.println(node.children.size());
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
         return node;
     }
 
@@ -316,12 +317,12 @@ public final class CodeGen extends ASTBaseVisitor<AST> {
 
     @Override
     protected AST visitVarDeclNode(AST node) {
+        
         return node;
     }
 
     @Override
     protected AST visitVarListNode(AST node) {
-
         for (int i = 0; i < node.children.size(); i++) {
             visit(node.getChild(i));
         }
@@ -330,9 +331,11 @@ public final class CodeGen extends ASTBaseVisitor<AST> {
 
     @Override
     protected AST visitVarUseNode(AST node) {
-        for (int i = 0; i < node.children.size(); i++) {
-            visit(node.getChild(i));
-        }
+        setAstRegister(node);
+        //visit(node.getChild(i));
+        //for (int i = 0; i < node.children.size(); i++) {
+        //    System.out.println("Used: " + node.getChild(i).intData);
+        //}
         return node;
     }
 
@@ -387,120 +390,277 @@ public final class CodeGen extends ASTBaseVisitor<AST> {
 
     @Override
     protected AST visitMinusNode(AST node) {
-        if (node.getChild(0) != null)
-            visit(node.getChild(0));
+        if (node.getChild(0) == null)
+            return null; // aqui deveria fazer Throw de soma invalida
+        
+        AST r = node.children.get(0);
+        AST l = node.children.get(1);
+        OpCode op = OpCode.ADDI;
+
+
+        
+        call_stack.push(node);
+        node.register = "$t" + registers.addTempReg(registers.getTempRegAmount() + 1 + "");
+        emit(OpCode.LI, node.register, "0");
+        register_stack.push(node.register);
+
+        
+        if(r.kind.toString() == "" && l.kind.toString() == "") {
+            emit(op, node.register, node.register, String.valueOf(r.intData));
+
+            emit(OpCode.SUB, node.register, node.register, String.valueOf(l.intData));
+            
+            return node;
+        }
+        System.out.println(l.kind);
+        System.out.println(r.kind);
+        
+        AST rv = visit(r);
+
+        if(call_stack.peek() == node) {
+            if(rv.register.length() > 0) {
+                op = OpCode.ADD;
+                emit(op, node.register, node.register, rv.register);
+            } else {
+                op = OpCode.ADDI;
+                System.out.println(String.valueOf(rv.intData));
+             
+                emit(op, node.register, node.register, String.valueOf(rv.intData));
+            }
+        } else {
+            op = OpCode.ADD;
+            AST fst = call_stack.pop();
+            String o2 = fst.register;
+            emit(op, node.register, node.register, o2);
+        }
+
+        AST lv = visit(l);
+        
+
+        
+        if(call_stack.peek() == node) {
+            if(lv.register.length() > 0) {
+                op = OpCode.SUB;
+                emit(op, node.register, node.register, lv.register);
+            } else {
+                op = OpCode.ADDI;
+                emit(op, node.register, node.register, String.valueOf(-lv.intData));
+            }
+        } else {
+            op = OpCode.ADD;
+            AST fst = call_stack.pop();
+            String o2 = fst.register;
+            emit(op, node.register, node.register, o2);
+        }
+
         return node;
     }
 
     @Override
     protected AST visitOverNode(AST node) {
-        if (node.getChild(0) != null)
-            visit(node.getChild(0));
+        if (node.getChild(0) == null)
+            return null; // aqui deveria fazer Throw de soma invalida
+        
+        AST r = node.children.get(0);
+        AST l = node.children.get(1);
+        OpCode op = OpCode.ADD;
+        
+        call_stack.push(node);
+        node.register = "$t" + registers.addTempReg(registers.getTempRegAmount() + 1 + "");
+        emit(OpCode.LI, node.register, "0");
+        register_stack.push(node.register);
+
+        
+        
+        AST rv = visit(r);
+        
+        if(r.kind.toString() == "" && l.kind.toString() == "") {
+            emit(op, node.register, node.register, String.valueOf(r.intData));
+            emit(OpCode.DIV, node.register, node.register, String.valueOf(l.intData));
+            
+            return node;
+        }
+        
+        System.out.println(l.kind);
+        System.out.println(r.kind);
+        
+
+
+        if(call_stack.peek() == node) {
+            if(rv.register.length() > 0) {
+                op = OpCode.ADD;
+                emit(op, node.register, node.register, rv.register);
+            } else {
+                op = OpCode.ADDI;
+                String aux = "$t" + registers.addTempReg(registers.getTempRegAmount() + 1 + "");
+                emit(op, aux, "$zero", Word.integerToHex(rv.intData));
+                op = OpCode.ADD;
+                emit(op, node.register, node.register, aux);
+            }
+        } else {
+            op = OpCode.ADD;
+            AST fst = call_stack.pop();
+            String o2 = fst.register;
+            emit(op, node.register, node.register, o2);
+        }
+
+        AST lv = visit(l);        
+
+        
+        if(call_stack.peek() == node) {
+            if(lv.register.length() > 0) {
+                op = OpCode.DIV;
+                emit(op, node.register, node.register, lv.register);
+            } else {
+                System.out.println("Adding int value 2");
+                op = OpCode.ADDI;
+                String aux = "$t" + registers.addTempReg(registers.getTempRegAmount() + 1 + "");
+                emit(op, aux, "$zero", Word.integerToHex(lv.intData));
+                op = OpCode.DIV;
+                emit(op, node.register, node.register, aux);
+            }
+        } else {
+            op = OpCode.ADD;
+            AST fst = call_stack.pop();
+            String o2 = fst.register;
+            emit(op, node.register, node.register, o2);
+        }
+
         return node;
     }
 
     @Override
     protected AST visitPlusNode(AST node) {
-        AST lf = node.children.get(0);
-        AST rt = node.children.get(1);
-        OpCode op;
-        String o1, o2, o3 = "$zero";
+        if (node.getChild(0) == null)
+            return null; // aqui deveria fazer Throw de soma invalida
+        
+        AST r = node.children.get(0);
+        AST l = node.children.get(1);
+        OpCode op = OpCode.ADDI;
+        
+        call_stack.push(node);
+        node.register = "$t" + registers.addTempReg(registers.getTempRegAmount() + 1 + "");
+        emit(OpCode.LI, node.register, "0");
+        register_stack.push(node.register);
 
-        if (node.type == Type.INT_TYPE || node.type == Type.BOOL_TYPE) {
+        if(r.kind.toString() == "" && l.kind.toString() == "") {
+            emit(op, node.register, node.register, String.valueOf(r.intData));
+            emit(op, node.register, node.register, String.valueOf(l.intData));
+            
+            return node;
+        }
+        System.out.println(l.kind);
+        System.out.println(r.kind);
+        
+        AST rv = visit(r);
+
+        if(call_stack.peek() == node) {
+            if(rv.register.length() > 0) {
+                op = OpCode.ADD;
+                emit(op, node.register, node.register, rv.register);
+            } else {
+                op = OpCode.ADDI;
+                emit(op, node.register, node.register, Word.integerToHex(rv.intData));
+            }
+        } else {
             op = OpCode.ADD;
-        } else if (node.type == Type.REAL_TYPE) {
-            op = OpCode.ADD_S;
+            AST fst = call_stack.pop();
+            String o2 = fst.register;
+            emit(op, node.register, node.register, o2);
+        }
+
+        AST lv = visit(l);
+        
+
+        
+        if(call_stack.peek() == node) {
+            if(lv.register.length() > 0) {
+                op = OpCode.ADD;
+                emit(op, node.register, node.register, lv.register);
+            } else {
+                op = OpCode.ADDI;
+                emit(op, node.register, node.register, Word.integerToHex(lv.intData));
+            }
         } else {
-            throw new RuntimeException("Invalid type for + operator");
+            op = OpCode.ADD;
+            AST fst = call_stack.pop();
+            String o2 = fst.register;
+            emit(op, node.register, node.register, o2);
         }
-
-        System.out.println(call_stack.peek().kind);
-
-        if (registers.contains(call_stack.peek().varTable.getName(call_stack.peek().intData))) {
-            if (op == OpCode.ADD) {
-                o1 = "$r" + registers.getIntReg(call_stack.peek().varTable.getName(call_stack.peek().intData));
-            } else {
-                o1 = "$f" + registers.getFloatReg(call_stack.peek().varTable.getName(call_stack.peek().intData));
-            }
-
-        } else {
-            if (op == OpCode.ADD) {
-                o1 = "$r" + registers.addIntReg(call_stack.peek().varTable.getName(call_stack.peek().intData));
-            } else {
-                o1 = "$f" + registers.addFloatReg(call_stack.peek().varTable.getName(call_stack.peek().intData));
-            }
-        }
-
-        // Se for uma variável, declara-se o registrador
-        // para ter o valor armanezado na memória
-
-        String var = lf.varTable.getName(lf.intData);
-
-        if (lf.type == Type.INT_TYPE || lf.type == Type.BOOL_TYPE || rt.kind == NodeKind.CHAR_VAL_NODE) {
-            op = OpCode.ADDI;
-        } else if (lf.type == Type.REAL_TYPE) {
-            op = OpCode.ADD_S;
-        } else {
-            throw new RuntimeException("Tipo de variável não suportado"); // TODO ver se fica como exception msm
-        }
-
-        if (registers.contains(var)) {
-            if (op == OpCode.ADDI) {
-                o2 = "$r" + registers.getIntReg(var);
-            } else {
-                o2 = "$f" + registers.getFloatReg(var);
-            }
-
-        } else {
-            if (op == OpCode.ADDI) {
-                o2 = "$r" + registers.addIntReg(var);
-            } else {
-                o2 = "$f" + registers.addFloatReg(var);
-            }
-        }
-
-        if (lf.kind == NodeKind.INT_VAL_NODE || lf.kind == NodeKind.BOOL_VAL_NODE) {
-            o2 = "" + Word.integerToHex(lf.intData);
-
-        } else if (rt.kind == NodeKind.REAL_VAL_NODE) {
-            o2 = "" + Word.floatToHex(lf.floatData);
-        }
-
-        System.out.println(o2);
-
-        var = rt.varTable.getName(rt.intData);
-
-        if (registers.contains(var)) {
-            if (op == OpCode.ADDI) {
-                o3 = "$r" + registers.getIntReg(var);
-            } else {
-                o3 = "$f" + registers.getFloatReg(var);
-            }
-
-        } else {
-            if (op == OpCode.ADDI) {
-                o3 = "$r" + registers.addIntReg(var);
-            } else {
-                o3 = "$f" + registers.addFloatReg(var);
-            }
-        }
-
-        if (rt.kind == NodeKind.INT_VAL_NODE || rt.kind == NodeKind.BOOL_VAL_NODE) {
-            o3 = "" + Word.integerToHex(rt.intData);
-
-        } else if (rt.kind == NodeKind.REAL_VAL_NODE) {
-            o3 = "" + Word.floatToHex(rt.floatData);
-        }
-
-        emit(op, o1, o2, o3);
 
         return node;
     }
 
     @Override
     protected AST visitTimesNode(AST node) {
-        if (node.getChild(0) != null)
-            visit(node.getChild(0));
+        if (node.getChild(0) == null)
+            return null; // aqui deveria fazer Throw de soma invalida
+        
+        AST r = node.children.get(0);
+        AST l = node.children.get(1);
+        OpCode op = OpCode.ADD;
+        
+        call_stack.push(node);
+        node.register = "$t" + registers.addTempReg(registers.getTempRegAmount() + 1 + "");
+        emit(OpCode.LI, node.register, "0");
+        register_stack.push(node.register);
+
+        
+        
+        AST rv = visit(r);
+        
+        if(r.kind.toString() == "" && l.kind.toString() == "") {
+            emit(op, node.register, node.register, String.valueOf(r.intData));
+            emit(OpCode.MUL, node.register, node.register, String.valueOf(l.intData));
+            
+            return node;
+        }
+        
+        System.out.println(l.kind);
+        System.out.println(r.kind);
+        
+
+
+        if(call_stack.peek() == node) {
+            if(rv.register.length() > 0) {
+                op = OpCode.ADD;
+                emit(op, node.register, node.register, rv.register);
+            } else {
+                op = OpCode.ADDI;
+                String aux = "$t" + registers.addTempReg(registers.getTempRegAmount() + 1 + "");
+                emit(op, aux, "$zero", Word.integerToHex(rv.intData));
+                op = OpCode.ADD;
+                emit(op, node.register, node.register, aux);
+            }
+        } else {
+            op = OpCode.ADD;
+            AST fst = call_stack.pop();
+            String o2 = fst.register;
+            emit(op, node.register, node.register, o2);
+        }
+
+        AST lv = visit(l);        
+
+        
+        if(call_stack.peek() == node) {
+            if(lv.register.length() > 0) {
+                op = OpCode.MUL;
+                emit(op, node.register, node.register, lv.register);
+            } else {
+                System.out.println("Adding int value 2");
+                op = OpCode.ADDI;
+                String aux = "$t" + registers.addTempReg(registers.getTempRegAmount() + 1 + "");
+                emit(op, aux, "$zero", Word.integerToHex(lv.intData));
+                op = OpCode.MUL;
+                emit(op, node.register, node.register, aux);
+            }
+        } else {
+            op = OpCode.ADD;
+            AST fst = call_stack.pop();
+            String o2 = fst.register;
+            emit(op, node.register, node.register, o2);
+        }
+
         return node;
     }
 

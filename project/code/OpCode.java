@@ -19,9 +19,10 @@ public enum OpCode {
     DIV_S("DIV.S", 3),
     DIVU("DIVU", 3),
     
-    MULT("MULT", 3),
-    MULT_S("MULT.S", 3),
-    MULTU("MULTU", 3),
+    MULT("MULT", 2),
+    MULT_S("MULT.S", 2),
+    MULTU("MULTU", 2),
+    MUL("MUL", 3),
 
     NOR("NOR", 3),
     OR("OR", 3),
@@ -47,6 +48,7 @@ public enum OpCode {
     LHI("LHI", 2),
     LLO("LLO", 2),
 
+    LI("LI", 2),
     // Comparison Instructions
     SLT("SLT", 3),
     SLTU("SLTU", 3),

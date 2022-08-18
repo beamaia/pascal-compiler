@@ -43,6 +43,7 @@ javac:
 # run:
 # 	cd $(GEN_PATH) && $(GRUN) PASLexer program $(FILE)
 
+
 run:
 	$(JAVA) $(CLASS_PATH_OPTION):$(BIN_PATH) $(MAIN_PATH)/Main $(FILE)
 
@@ -53,7 +54,10 @@ runall:
 	done;
 
 backend:
-	$(JAVA) -jar Mars4_5.jar sm out.asm
+	reset;
+	make;
+	make run;
+	$(JAVA) -jar Mars4_5.jar sm \$\s0 \$\s1 \$\s2 \$\s3 \$\s4 \$\s5 \$\s6 \$\s7 out.asm
 
 clean:
 	@rm -rf $(GEN_PATH)

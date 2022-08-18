@@ -19,6 +19,7 @@ public final class AST {
 	public  final int intData;
 	public  final float floatData;
 	public  final Type type;
+	public  String registerStr;
 	private final List<AST> children; // Privado para que a manipulação da lista seja controlável.
 	
 	// Construtor completo para poder tornar todos os campos final.
@@ -29,8 +30,13 @@ public final class AST {
 		this.floatData = floatData;
 		this.type = type;
 		this.children = new ArrayList<AST>();
+		this.registerStr = "";
 	}
 	
+	public void setAstRegister(String register) {
+		this.registerStr = register;
+	}
+
 	// Cria o nó com um dado inteiro.
 	public AST(NodeKind kind, int intData, Type type) {
 		this(kind, intData, 0.0f, type);

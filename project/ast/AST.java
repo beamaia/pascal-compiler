@@ -15,6 +15,7 @@ public class AST {
     public final int intData;
     public final float floatData;
     public final Type type;
+    public String register;
     public final List<AST> children;
 
     private static int nr;
@@ -29,6 +30,7 @@ public class AST {
         this.type = type;
         this.children = new ArrayList<AST>();
         this.varTable = varTable;
+        this.register = "";
     }
 
     // Quando eh inicializado um no de valor inteiro ou bool (ele usa 1 pra true e 0 pra false)
