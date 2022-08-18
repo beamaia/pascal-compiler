@@ -1,5 +1,7 @@
 package code;
 
+import java.math.BigInteger;
+
 /*
  * Implementação de uma palavra na memória em bytes.
  */
@@ -37,4 +39,18 @@ public final class Word {
         return Float.intBitsToFloat(intBits);
     }
     
+    public static String floatToHex(float f) {
+        // change the float to raw integer bits(according to the OP's requirement)
+        int intValue = Float.floatToRawIntBits(f);
+        String bin = Integer.toBinaryString(intValue);
+        BigInteger b = new BigInteger(bin, 2);
+        return "0x" + b.toString(16);
+    }
+
+    public static String integerToHex(int i) {
+        String bin = Integer.toBinaryString(i);
+        BigInteger b = new BigInteger(bin, 2);
+        return "0x" + b.toString(16);
+    }
+
 }

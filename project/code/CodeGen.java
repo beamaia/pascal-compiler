@@ -125,6 +125,12 @@ public final class CodeGen extends ASTBaseVisitor<Integer> {
         return "0x" + b.toString(16);
     }
 
+    public static String integerToHex(int i) {
+        String bin = Integer.toBinaryString(i);
+        BigInteger b = new BigInteger(bin, 2);
+        return "0x" + b.toString(16);
+    }
+
     @Override
     protected Integer visitAssignNode(AST node) {
         AST lf = node.children.get(0);
@@ -164,7 +170,7 @@ public final class CodeGen extends ASTBaseVisitor<Integer> {
 
             // Lidando com tipos primitivos
             if (rt.kind == NodeKind.INT_VAL_NODE || rt.kind == NodeKind.BOOL_VAL_NODE ) {
-                o2 = "" + rt.intData; 
+                o2 = "" + integerToHex(rt.intData); 
                 emit(op, o1, o3, o2);
             } else if (rt.kind == NodeKind.REAL_VAL_NODE) {
                 o2 = "" + rt.floatData;
