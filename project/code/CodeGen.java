@@ -7,8 +7,8 @@ import code.RegistersOrg.*;
 import code.Registers;
 
 import java.math.BigInteger;
+import java.util.Stack;
 import java.io.PrintWriter;
-
 
 import ast.*;
 import tables.*;
@@ -18,16 +18,20 @@ import types.Type.*;
 /*
  * Visitador da AST para gerar o código.
  */
-public final class CodeGen extends ASTBaseVisitor<Integer> {
+public final class CodeGen extends ASTBaseVisitor<AST> {
     private final Instruction code[]; // Memória
     private final StrTable st;
     private final VarTable vt;
     private RegistersOrg registers;
     private PrintWriter writer;
 
+    private Stack<AST> call_stack;
+
+    private AST caller;
+
     // Contadores
-    private static int nextInstr;      // contador de instrução
-    private static int intRegsCount;   // contador de registrador (vamos supor inf)
+    private static int nextInstr; // contador de instrução
+    private static int intRegsCount; // contador de registrador (vamos supor inf)
     private static int floatRegsCount; // contador de registrador (vamos supor inf)
 
     public CodeGen(StrTable st, VarTable vt) {
@@ -35,6 +39,7 @@ public final class CodeGen extends ASTBaseVisitor<Integer> {
         this.vt = vt;
         this.code = new Instruction[INSTR_MEM_SIZE];
         this.registers = new RegistersOrg();
+        this.call_stack = new Stack<AST>();
     }
 
     // Inicialização e execução da visita da AST
@@ -44,9 +49,10 @@ public final class CodeGen extends ASTBaseVisitor<Integer> {
         intRegsCount = 0;
         floatRegsCount = 0;
 
-        try{
+        try {
             writer = new PrintWriter("out.asm", "UTF-8");
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
 
         // Prints data
         writer.printf(".data:\n");
@@ -63,49 +69,49 @@ public final class CodeGen extends ASTBaseVisitor<Integer> {
 
     // Funções de print
     void dumpProgram() {
-	    for (int addr = 0; addr < nextInstr; addr++) {
-	    	writer.printf("\t%s\n", code[addr].toString());
-	    }
-	}
+        for (int addr = 0; addr < nextInstr; addr++) {
+            writer.printf("\t%s\n", code[addr].toString());
+        }
+    }
 
     public static String removeFirstandLast(String str) {
- 
+
         // Removing first and last character
         // of a string using substring() method
         str = str.substring(1, str.length() - 1);
- 
+
         // Return the modified string
         return str;
     }
 
-	void dumpStrTable() {
+    void dumpStrTable() {
         String aux;
 
-	    for (int i = 0; i < st.size(); i++) {
+        for (int i = 0; i < st.size(); i++) {
             aux = removeFirstandLast(st.getText(i));
-	        writer.printf("\tstring%05d: .asciiz \"%s\"\n", i, aux);
-	    }
-	}
+            writer.printf("\tstring%05d: .asciiz \"%s\"\n", i, aux);
+        }
+    }
 
     // Funções de emit de acordo com o tamanho de cada operando
     // (sobrecarga de métodos)
     private void emit(OpCode op, String o1, String o2, String o3) {
-		Instruction instr = new Instruction(op, o1, o2, o3);
-	    code[nextInstr] = instr;
-	    nextInstr++;
-	}
-	
-	private void emit(OpCode op) {
-		emit(op, "", "", "");
-	}
-	
-	private void emit(OpCode op, String o1) {
-		emit(op, o1, "", "");
-	}
-	
-	private void emit(OpCode op, String o1, String o2) {
-		emit(op, o1, o2, "");
-	}
+        Instruction instr = new Instruction(op, o1, o2, o3);
+        code[nextInstr] = instr;
+        nextInstr++;
+    }
+
+    private void emit(OpCode op) {
+        emit(op, "", "", "");
+    }
+
+    private void emit(OpCode op, String o1) {
+        emit(op, o1, "", "");
+    }
+
+    private void emit(OpCode op, String o1, String o2) {
+        emit(op, o1, o2, "");
+    }
 
     // Incrementadores de registradores
     private int newIntReg() {
@@ -117,27 +123,16 @@ public final class CodeGen extends ASTBaseVisitor<Integer> {
     }
 
     // Visitadores especializados
-    public static String floatToHex(float f) {
-        // change the float to raw integer bits(according to the OP's requirement)
-        int intValue = Float.floatToRawIntBits(f);
-        String bin = Integer.toBinaryString(intValue);
-        BigInteger b = new BigInteger(bin, 2);
-        return "0x" + b.toString(16);
-    }
-
-    public static String integerToHex(int i) {
-        String bin = Integer.toBinaryString(i);
-        BigInteger b = new BigInteger(bin, 2);
-        return "0x" + b.toString(16);
-    }
 
     @Override
-    protected Integer visitAssignNode(AST node) {
+    protected AST visitAssignNode(AST node) {
         AST lf = node.children.get(0);
         AST rt = node.children.get(1);
         OpCode op;
         String o1, o2, o3;
         o3 = "$zero";
+        call_stack.push(lf);
+        visit(rt);
 
         if (lf.kind == NodeKind.VAR_USE_NODE) {
             String var = lf.varTable.getName(lf.intData);
@@ -151,7 +146,6 @@ public final class CodeGen extends ASTBaseVisitor<Integer> {
             } else {
                 throw new RuntimeException("Tipo de variável não suportado"); // TODO ver se fica como exception msm
             }
-
 
             if (registers.contains(var)) {
                 if (op == OpCode.ADDI) {
@@ -169,286 +163,422 @@ public final class CodeGen extends ASTBaseVisitor<Integer> {
             }
 
             // Lidando com tipos primitivos
-            if (rt.kind == NodeKind.INT_VAL_NODE || rt.kind == NodeKind.BOOL_VAL_NODE ) {
-                o2 = "" + integerToHex(rt.intData); 
+            if (rt.kind == NodeKind.INT_VAL_NODE || rt.kind == NodeKind.BOOL_VAL_NODE) {
+                o2 = "" + Word.integerToHex(rt.intData);
                 emit(op, o1, o3, o2);
             } else if (rt.kind == NodeKind.REAL_VAL_NODE) {
                 o2 = "" + rt.floatData;
-                emit(OpCode.ADDI, "$t0", "$zero", floatToHex(rt.floatData));
+                emit(OpCode.ADDI, "$t0", "$zero", Word.floatToHex(rt.floatData));
                 emit(op, o1, o3, "$t0");
             }
-        } 
+        }
+        call_stack.pop();
         // TODO levanta erro
 
-        
-        return -1;
+        return node;
     }
 
     @Override
-    protected Integer visitEqNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitEqNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitLtNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitLtNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitGtNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitGtNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitLeNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitLeNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitGeNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitGeNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitNeqNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitNeqNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitNotNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitNotNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitAndNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitAndNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitOrNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitOrNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitWhileNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitWhileNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitProgramNode(AST node) {
+    protected AST visitProgramNode(AST node) {
         for (int i = 0; i < node.children.size(); i++) {
-            visit(node.getChild(i));        }
-        return -1;
+            visit(node.getChild(i));
+        }
+        return node;
     }
 
     @Override
-    protected Integer visitStmtListNode(AST node) {
+    protected AST visitStmtListNode(AST node) {
         for (int i = 0; i < node.children.size(); i++) {
             visit(node.getChild(i));
         }
 
-        return -1;
+        return node;
     }
 
     @Override
-    protected Integer visitIfNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitIfNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitElseNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitElseNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitIntValNode(AST node) {
-        writer.println("Integer value: " + node.intData);
-        writer.println(node.children.size());
-        return -1;
+    protected AST visitIntValNode(AST node) {
+        // writer.println("Integer value: " + node.intData);
+        // writer.println(node.children.size());
+        return node;
     }
 
     @Override
-    protected Integer visitBoolValNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitBoolValNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitRealValNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitRealValNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitCharValNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitCharValNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitStrValNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitStrValNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitVarDeclNode(AST node) {
-        return -1;
+    protected AST visitVarDeclNode(AST node) {
+        return node;
     }
 
     @Override
-    protected Integer visitVarListNode(AST node) {
-        // visit(node.getChild(0));
+    protected AST visitVarListNode(AST node) {
+
         for (int i = 0; i < node.children.size(); i++) {
             visit(node.getChild(i));
         }
-        return -1;
+        return node;
     }
 
     @Override
-    protected Integer visitVarUseNode(AST node) {
+    protected AST visitVarUseNode(AST node) {
         for (int i = 0; i < node.children.size(); i++) {
             visit(node.getChild(i));
         }
-        return -1;
+        return node;
     }
 
     @Override
-    protected Integer visitNilValNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitNilValNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitArrayNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitArrayNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitArrayElmtNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitArrayElmtNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitArrayIndexNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitArrayIndexNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitFuncListNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitFuncListNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitFuncUseNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitFuncUseNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitFuncDeclNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitFuncDeclNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitMinusNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitMinusNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitOverNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitOverNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitTimesNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitPlusNode(AST node) {
+        AST lf = node.children.get(0);
+        AST rt = node.children.get(1);
+        OpCode op;
+        String o1, o2, o3 = "$zero";
+
+        if (node.type == Type.INT_TYPE || node.type == Type.BOOL_TYPE) {
+            op = OpCode.ADD;
+        } else if (node.type == Type.REAL_TYPE) {
+            op = OpCode.ADD_S;
+        } else {
+            throw new RuntimeException("Invalid type for + operator");
+        }
+
+        System.out.println(call_stack.peek().kind);
+
+        if (registers.contains(call_stack.peek().varTable.getName(call_stack.peek().intData))) {
+            if (op == OpCode.ADD) {
+                o1 = "$r" + registers.getIntReg(call_stack.peek().varTable.getName(call_stack.peek().intData));
+            } else {
+                o1 = "$f" + registers.getFloatReg(call_stack.peek().varTable.getName(call_stack.peek().intData));
+            }
+
+        } else {
+            if (op == OpCode.ADD) {
+                o1 = "$r" + registers.addIntReg(call_stack.peek().varTable.getName(call_stack.peek().intData));
+            } else {
+                o1 = "$f" + registers.addFloatReg(call_stack.peek().varTable.getName(call_stack.peek().intData));
+            }
+        }
+
+        // Se for uma variável, declara-se o registrador
+        // para ter o valor armanezado na memória
+
+        String var = lf.varTable.getName(lf.intData);
+
+        if (lf.type == Type.INT_TYPE || lf.type == Type.BOOL_TYPE || rt.kind == NodeKind.CHAR_VAL_NODE) {
+            op = OpCode.ADDI;
+        } else if (lf.type == Type.REAL_TYPE) {
+            op = OpCode.ADD_S;
+        } else {
+            throw new RuntimeException("Tipo de variável não suportado"); // TODO ver se fica como exception msm
+        }
+
+        if (registers.contains(var)) {
+            if (op == OpCode.ADDI) {
+                o2 = "$r" + registers.getIntReg(var);
+            } else {
+                o2 = "$f" + registers.getFloatReg(var);
+            }
+
+        } else {
+            if (op == OpCode.ADDI) {
+                o2 = "$r" + registers.addIntReg(var);
+            } else {
+                o2 = "$f" + registers.addFloatReg(var);
+            }
+        }
+
+        if (lf.kind == NodeKind.INT_VAL_NODE || lf.kind == NodeKind.BOOL_VAL_NODE) {
+            o2 = "" + Word.integerToHex(lf.intData);
+
+        } else if (rt.kind == NodeKind.REAL_VAL_NODE) {
+            o2 = "" + Word.floatToHex(lf.floatData);
+        }
+
+        System.out.println(o2);
+
+        var = rt.varTable.getName(rt.intData);
+
+        if (registers.contains(var)) {
+            if (op == OpCode.ADDI) {
+                o3 = "$r" + registers.getIntReg(var);
+            } else {
+                o3 = "$f" + registers.getFloatReg(var);
+            }
+
+        } else {
+            if (op == OpCode.ADDI) {
+                o3 = "$r" + registers.addIntReg(var);
+            } else {
+                o3 = "$f" + registers.addFloatReg(var);
+            }
+        }
+
+        if (rt.kind == NodeKind.INT_VAL_NODE || rt.kind == NodeKind.BOOL_VAL_NODE) {
+            o3 = "" + Word.integerToHex(rt.intData);
+
+        } else if (rt.kind == NodeKind.REAL_VAL_NODE) {
+            o3 = "" + Word.floatToHex(rt.floatData);
+        }
+
+        emit(op, o1, o2, o3);
+
+        return node;
     }
 
     @Override
-    protected Integer visitModNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitTimesNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitDivNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitModNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitB2INode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitDivNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitB2RNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitB2INode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitB2SNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitB2RNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitI2RNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitB2SNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitI2SNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitI2RNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitR2SNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitI2SNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitTypeNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitR2SNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitNoNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitTypeNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
     @Override
-    protected Integer visitEndNode(AST node) {
-        visit(node.getChild(0));
-        return -1;
+    protected AST visitNoNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
+    }
+
+    @Override
+    protected AST visitEndNode(AST node) {
+        if (node.getChild(0) != null)
+            visit(node.getChild(0));
+        return node;
     }
 
 }

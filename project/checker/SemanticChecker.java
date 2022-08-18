@@ -52,7 +52,7 @@ public class SemanticChecker extends PASParserBaseVisitor<AST> {
         this.functionTable.addFunc(new EntryFunc("readln", 0, IO_TYPE));
         root.functionTable = functionTable;
 
-        // AST.printDot(this.root, variableTable);
+        //AST.printDot(this.root, variableTable);
     }	
 
     /*************************** DECLARACAO DE VARIAVEIS ***************************/

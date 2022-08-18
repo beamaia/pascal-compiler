@@ -80,6 +80,8 @@ public abstract class ASTBaseVisitor<T> {
             case FUNC_DECL_NODE:
                 return visitFuncDeclNode(node);
 
+            case PLUS_NODE:
+                return visitPlusNode(node);
             case MINUS_NODE:
                 return visitMinusNode(node);
             case OVER_NODE:
@@ -181,6 +183,8 @@ public abstract class ASTBaseVisitor<T> {
     protected abstract T visitMinusNode(AST node);
 
     protected abstract T visitOverNode(AST node);
+
+    protected abstract T visitPlusNode(AST node);
 
     protected abstract T visitTimesNode(AST node);
 

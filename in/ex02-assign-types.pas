@@ -12,11 +12,12 @@ BEGIN
     x := 56;   { valid real number assigned to variable x }
     {writeln(x);     { x contains the value -3.9E-3 }
     id:=2;
-    i := 10;        { valid integer number assigned to variable i }
-    i := id * i + i / i;     { valid (!) - i will be 1000 now }
+    i := 90;        { valid integer number assigned to variable i }
+    {i := id * i + i / i;}     { valid (!) - i will be 1000 now }
     i := 9933;      { valid integer number assigned to variable i }
-    i := -99999;    { invalid integer - too small }
-    i := 999.44;    { invalid assignment - types do not match }
+    {i := -99999;}    { invalid integer - too small }
+    i := 1 + i ;
+    {i := 999.44;}    { invalid assignment - types do not match }
     {i := 'A';       { invalid assignment - types do not match }
     {c := '1';       { valid character assigned to variable c }
     {c := 1;         { invalid assignment - types do not match }
