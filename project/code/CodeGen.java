@@ -181,8 +181,18 @@ public final class CodeGen extends ASTBaseVisitor<AST> {
 
     @Override
     protected AST visitEqNode(AST node) {
-        if (node.getChild(0) != null)
-            visit(node.getChild(0));
+        if (node.getChild(0) == null)
+            return null;
+
+        AST r = node.children.get(0);
+        AST l = node.children.get(1);
+        OpCode op = OpCode.BEQ;
+        String o1, o2, o3;
+
+        call_stack.push(node);
+        
+        
+
         return node;
     }
 
@@ -196,7 +206,10 @@ public final class CodeGen extends ASTBaseVisitor<AST> {
     @Override
     protected AST visitGtNode(AST node) {
         if (node.getChild(0) != null)
-            visit(node.getChild(0));
+            return null;
+        
+
+
         return node;
     }
 
@@ -268,8 +281,31 @@ public final class CodeGen extends ASTBaseVisitor<AST> {
 
     @Override
     protected AST visitIfNode(AST node) {
-        if (node.getChild(0) != null)
-            visit(node.getChild(0));
+        if (node.getChild(0) == null)
+            return null;
+        
+        AST conditional = node.getChild(0);
+        AST then = node.getChild(1);
+
+        // register for conditional expression
+        node.register = "$t" + registers.addTempReg(registers.getTempRegAmount() + 1 + "");
+        emit(OpCode.LI, node.register, "1"); // true value
+
+        visit(conditional);
+        AST conditionalResponse = call_stack.pop();
+        String o2 = conditionalResponse.register;
+
+        // current instruction counter to contabilize the jump after "then"
+        int currentNextInstr = nextInstr + 0;
+        // writing the jump instruction
+        emit(OpCode.BEQ, node.register, o2, currentNextInstr + "");
+        // counting "then" statement
+        visit(then);
+        // counting the jump after "then"
+        int elapsedNextInstr = nextInstr - currentNextInstr;
+        // overwriting the jump instruction
+        code[currentNextInstr].o3 = elapsedNextInstr + "";
+
         return node;
     }
 

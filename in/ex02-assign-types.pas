@@ -15,8 +15,16 @@ BEGIN
     {i := 2;
     i := i - 256 - 120 - i - 300 - 300 ;}
     i := 32;
-    id := 2;
-    i := 32 + i / id / 2 * 10;
+    if 16 = 16 then
+        begin
+            i:=30;
+        end;
+    i:=50;
+    {else
+        begin 
+            xOneBig:=false;
+            xTwoBig:=false;
+        end;}
 
     {i := i + i + i + i + i + 25;}
     {i := 90;}        { valid integer number assigned to variable i }

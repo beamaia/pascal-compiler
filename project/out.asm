@@ -1,19 +1,14 @@
 .data:
 .text:
 	ADDI $s0, $zero, 0x20
-	ADDI $s1, $zero, 0x2
-	LI $t0, 0
+	LI $t0, 1
+	LI $t1, 1
+	J 2
+	J 5
+	LI $t1, 16
+	LI $t2, 16
+	BEQ $t1, $t2, -3
 	LI $t1, 0
-	LI $t2, 0
-	LI $t3, 0
-	ADDI $t3, $t3, 0x20
-	ADD $t3, $t3, $s0
-	ADD $t2, $t2, $t3
-	DIV $t2, $t2, $s1
-	ADD $t1, $t1, $t2
-	ADDI $t4, $zero, 0x2
-	DIV $t1, $t1, $t4
-	ADD $t0, $t0, $t1
-	ADDI $t5, $zero, 0xa
-	MUL $t0, $t0, $t5
-	ADD $s0, $zero, $t0
+	BEQ $t0, $t1, 2
+	ADDI $s0, $zero, 0x1e
+	ADDI $s0, $zero, 0x32
