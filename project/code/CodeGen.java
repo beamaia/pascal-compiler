@@ -157,7 +157,7 @@ public final class CodeGen extends ASTBaseVisitor<AST> {
         // adds register to stack
         register_stack.push(r.register);
 
-        OpCode op = r.type == Type.INT_TYPE ? OpCode.ADDI : OpCode.ADD_S;
+        OpCode op = OpCode.ADDI;
         String o1 = r.register;
         String o2, o3 = "$zero";
 
@@ -186,13 +186,42 @@ public final class CodeGen extends ASTBaseVisitor<AST> {
 
         AST r = node.children.get(0);
         AST l = node.children.get(1);
-        OpCode op = OpCode.BEQ;
+
         String o1, o2, o3;
+        int data1, data2;
+
+        // left operand and right operand should be the same type (not considering float as possibilities)
+        if (r.type == l.type) {
+        //     // z := true;
+        //     // z := z = false;
+            System.out.println("EqNode: " + r.type + " " + l.type);
+            System.out.println("EqNode: " + r.intData + " " + l.intData);
+            System.out.println("EqNode: " + r.kind + " " + l.kind);
+            if (r.kind == NodeKind.VAR_USE_NODE) {
+                o2 = "$s" + registers.getIntReg(r.varTable.getName(r.intData));
+            } else if (r.type.toString() == "") {
+                data1 = r.intData;
+                o2 = "$t" + registers.addTempReg(registers.getTempRegAmount() + 1 + "");
+                emit(OpCode.ADDI, o2, "$zero", Word.integerToHex(data1));
+            }
+
+            if (l.kind == NodeKind.VAR_USE_NODE) {
+                o3 = "$s" + registers.getIntReg(r.varTable.getName(l.intData));
+            } else if (l.type.toString() == "") {
+                data2 = l.intData;
+                o3 = "$t" + registers.addTempReg(registers.getTempRegAmount() + 1 + "");
+                emit(OpCode.ADDI, o3, "$zero", Word.integerToHex(data2));
+            }
+        }
+
+
+        OpCode op = OpCode.SUB;
+
+        node.register = "$t" + registers.addTempReg(registers.getTempRegAmount() + 1 + "");
+
 
         call_stack.push(node);
-        
-        
-
+    
         return node;
     }
 
