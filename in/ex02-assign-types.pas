@@ -7,6 +7,7 @@ VAR
    s : char;      { variable name is s, type is char }
    a,b: char;
    id,y: INTEGER;
+   z : boolean;
 BEGIN
     {x := -34.55;}    { valid real number assigned to variable x }
     {x := 56;}   { valid real number assigned to variable x }
@@ -14,12 +15,13 @@ BEGIN
     {id:=2;}
     {i := 2;
     i := i - 256 - 120 - i - 300 - 300 ;}
-    i := 32;
-    if 16 = 16 then
+    z := true;
+    z := z = false;
+    {if 16 = 16 then
         begin
             i:=30;
         end;
-    i:=50;
+    i:=50;}
     {else
         begin 
             xOneBig:=false;
