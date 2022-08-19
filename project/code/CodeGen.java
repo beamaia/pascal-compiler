@@ -192,11 +192,6 @@ public final class CodeGen extends ASTBaseVisitor<AST> {
 
         // left operand and right operand should be the same type (not considering float as possibilities)
         if (r.type == l.type) {
-        //     // z := true;
-        //     // z := z = false;
-            System.out.println("EqNode: " + r.type + " " + l.type);
-            System.out.println("EqNode: " + r.intData + " " + l.intData);
-            System.out.println("EqNode: " + r.kind + " " + l.kind);
             if (r.kind == NodeKind.VAR_USE_NODE) {
                 o2 = "$s" + registers.getIntReg(r.varTable.getName(r.intData));
             } else if (r.type.toString() == "") {
@@ -477,8 +472,6 @@ public final class CodeGen extends ASTBaseVisitor<AST> {
             
             return node;
         }
-        System.out.println(l.kind);
-        System.out.println(r.kind);
         
         AST rv = visit(r);
 
@@ -487,9 +480,7 @@ public final class CodeGen extends ASTBaseVisitor<AST> {
                 op = OpCode.ADD;
                 emit(op, node.register, node.register, rv.register);
             } else {
-                op = OpCode.ADDI;
-                System.out.println(String.valueOf(rv.intData));
-             
+                op = OpCode.ADDI;             
                 emit(op, node.register, node.register, String.valueOf(rv.intData));
             }
         } else {
@@ -546,11 +537,6 @@ public final class CodeGen extends ASTBaseVisitor<AST> {
             return node;
         }
         
-        System.out.println(l.kind);
-        System.out.println(r.kind);
-        
-
-
         if(call_stack.peek() == node) {
             if(rv.register.length() > 0) {
                 op = OpCode.ADD;
@@ -577,7 +563,6 @@ public final class CodeGen extends ASTBaseVisitor<AST> {
                 op = OpCode.DIV;
                 emit(op, node.register, node.register, lv.register);
             } else {
-                System.out.println("Adding int value 2");
                 op = OpCode.ADDI;
                 String aux = "$t" + registers.addTempReg(registers.getTempRegAmount() + 1 + "");
                 emit(op, aux, "$zero", Word.integerToHex(lv.intData));
@@ -614,9 +599,7 @@ public final class CodeGen extends ASTBaseVisitor<AST> {
             
             return node;
         }
-        System.out.println(l.kind);
-        System.out.println(r.kind);
-        
+
         AST rv = visit(r);
 
         if(call_stack.peek() == node) {
@@ -681,10 +664,6 @@ public final class CodeGen extends ASTBaseVisitor<AST> {
             return node;
         }
         
-        System.out.println(l.kind);
-        System.out.println(r.kind);
-        
-
 
         if(call_stack.peek() == node) {
             if(rv.register.length() > 0) {
@@ -712,7 +691,6 @@ public final class CodeGen extends ASTBaseVisitor<AST> {
                 op = OpCode.MUL;
                 emit(op, node.register, node.register, lv.register);
             } else {
-                System.out.println("Adding int value 2");
                 op = OpCode.ADDI;
                 String aux = "$t" + registers.addTempReg(registers.getTempRegAmount() + 1 + "");
                 emit(op, aux, "$zero", Word.integerToHex(lv.intData));
