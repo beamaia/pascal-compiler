@@ -20,6 +20,8 @@ Como não conseguimos implementar algumas das funcionalidades necessárias, vamo
 * Inclusão das instruções no .text do código .asm;
 * O back end gera um código .asm, o arquivo out.asm.
 
+Nas operações aritméticas, não foram consideradas precêndencias do escopo matemático (ex. multiplicação antes da soma). O programa resolve as equações de esquerda para direita.
+
 ## ▶️ Execução
 
 Criamos uma imagem Docker contendo o Antlr (versão 4.10.1) rodando o openjdk na versão 11.
@@ -50,6 +52,19 @@ Na main há um trecho da seguinte forma:
 
 Ele foi feito para não ter poluição visual no terminalm, uma vez que o método showTables apresenta a tabela .dot de cada programa.
 
+## :test_tube: Testes
+
+Para analisar o funcionamento das funcionalidades, basta executar o seguinte comando:
+
+```sh
+    make run
+```
+
+Este comando executa o código incluindo o exemplo ex02-assign-types.pas. Para ver os valores presentes nos registradores s0-s7, pode ser executado o comando:
+
+```sh
+    make backend
+```
 ## 🤔 Dificuldades
 
 Tivemos bastante dificuldade para fazer a parte do CP3 principalmente por causa do mau gerenciamento do tempo. Além disso, os membros do grupo ficaram sobrecarregados por motivos diferentes, tanto acadêmicos quanto profissionais ou pessoais. Retirando-se os motivos "extra-disciplinares", a maior dificuldade no trabalho foi a manipulação das variáveis como registradores, tanto que temos uma lista de registradores para organizá-los e uma pilha para manusear os registradores. Tivemos dificuldades também, com a tradução das informações para instruções do MIPS, o que tomou um tempo considerável para que começássemos a fazer o back end funcionar de fato. 
